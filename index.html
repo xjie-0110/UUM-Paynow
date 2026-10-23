@@ -1,0 +1,1940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UUM PayNow - Cashless Quest & Campus Smart Wallet</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            uum: {
+              blue: '#0d5be1',
+              dark: '#0a3d99',
+              light: '#eff6ff',
+              emerald: '#10b981',
+              darkgreen: '#059669',
+              amber: '#f59e0b',
+              red: '#ef4444'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="vendor/leaflet.css" />
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/custom.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+
+  <!-- ======================================================== -->
+  <!-- TOP NAVIGATION BAR -->
+  <!-- ======================================================== -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Left: Logo -->
+        <div class="flex items-center gap-8">
+          <a href="#" onclick="switchTab('home')" class="flex items-center gap-2 group">
+            <img src="images/uum_paynow_logo.svg" alt="UUM PayNow Logo" class="h-9 w-auto">
+          </a>
+
+          <!-- Navigation Links -->
+          <nav class="hidden md:flex items-center gap-1">
+            <button data-switch-tab="home" class="nav-tab px-3.5 py-1.5 rounded-xl text-xs font-semibold text-blue-600 bg-blue-50 transition-colors">
+              Home
+            </button>
+            <button data-switch-tab="merchants" class="nav-tab px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-blue-600 transition-colors">
+              Merchants
+            </button>
+            <button data-switch-tab="pay" class="nav-tab px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-blue-600 transition-colors">
+              Pay
+            </button>
+            <button data-switch-tab="split" class="nav-tab px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-blue-600 transition-colors">
+              Split Bills
+            </button>
+            <button data-switch-tab="analytics" class="nav-tab px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-blue-600 transition-colors">
+              Analytics
+            </button>
+            <button data-switch-tab="rewards" class="nav-tab px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-blue-600 transition-colors">
+              Rewards & Map
+            </button>
+            <button data-switch-tab="fraud" class="nav-tab px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-blue-600 transition-colors flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+              Fraud Guard
+            </button>
+          </nav>
+        </div>
+
+        <!-- Right: Accessibility, Notifications & Profile with Switcher/Logout -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          
+          <!-- Senior Mode Pill (Matches user image media_1792760354629_d05abe31.png) -->
+          <button id="btn-senior-mode" onclick="toggleSeniorMode()" class="senior-mode-btn px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer" title="Senior Mode — Enlarged text & higher contrast">
+            <span class="text-sm">👓</span>
+            <span class="tracking-tight">Senior Mode</span>
+          </button>
+
+          <!-- Dark Mode Toggle (Matches user image media_1792760354629_d05abe31.png) -->
+          <button id="btn-dark-mode" onclick="toggleDarkMode()" class="dark-mode-btn w-9 h-9 rounded-2xl flex items-center justify-center text-sm shadow-2xs transition-all cursor-pointer" title="Toggle Dark Theme">
+            <span id="dark-mode-icon">🌙</span>
+          </button>
+
+          <!-- Notification Bell -->
+          <div class="relative">
+            <button id="notification-bell" class="p-2 rounded-xl text-slate-600 hover:text-blue-600 hover:bg-slate-100 transition-colors relative" aria-label="Notifications">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+              <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white"></span>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-200 py-3 z-50">
+              <div class="px-4 pb-2 border-b border-slate-100 flex items-center justify-between">
+                <span class="font-bold text-xs text-slate-800">Notifications</span>
+                <span class="text-[10px] text-blue-600 font-semibold cursor-pointer">Mark all read</span>
+              </div>
+              <div class="divide-y divide-slate-100 max-h-72 overflow-y-auto">
+                <div class="p-3 hover:bg-slate-50 cursor-pointer flex items-start gap-2.5 bg-red-50/40">
+                  <span class="text-base">🚨</span>
+                  <div>
+                    <p class="text-xs font-bold text-red-800">Suspicious Merchant Blocked</p>
+                    <p class="text-[11px] text-slate-600">A payment request of RM 120.00 from unverified 'Cafe Vista Official' was intercepted.</p>
+                    <span class="text-[10px] text-slate-400">Oct 21, 23:15</span>
+                  </div>
+                </div>
+                <div class="p-3 hover:bg-slate-50 cursor-pointer flex items-start gap-2.5 bg-amber-50/40">
+                  <span class="text-base">💸</span>
+                  <div>
+                    <p class="text-xs font-bold text-amber-900">Unsettled Campus Splits</p>
+                    <p class="text-[11px] text-slate-600">Sarah Lim has 2 unsettled canteen bills totaling RM 20.00.</p>
+                    <span class="text-[10px] text-slate-400">Today</span>
+                  </div>
+                </div>
+                <div class="p-3 hover:bg-slate-50 cursor-pointer flex items-start gap-2.5">
+                  <span class="text-base">🎁</span>
+                  <div>
+                    <p class="text-xs font-bold text-slate-800">Weekly Target Reached</p>
+                    <p class="text-[11px] text-slate-600">5/5 digital payments completed this week! +50 bonus points added.</p>
+                    <span class="text-[10px] text-slate-400">Oct 20, 2026</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Avatar Profile with Switch Account & Logout Dropdown -->
+          <div class="relative">
+            <button id="user-profile-menu-btn" onclick="toggleProfileDropdown()" class="flex items-center gap-2 pl-2 border-l border-slate-200 py-1 pr-1.5 rounded-2xl hover:bg-slate-100 transition-colors cursor-pointer" aria-label="User Account Menu">
+              <div class="w-9 h-9 rounded-full overflow-hidden bg-blue-600 ring-2 ring-blue-500/30">
+                <img id="nav-user-avatar" src="images/avatar_alex.jpg" alt="User Profile" class="w-full h-full object-cover">
+              </div>
+              <div class="hidden sm:block text-left">
+                <div id="nav-user-name" class="text-xs font-bold text-slate-900 leading-tight">Alex Tan</div>
+                <div id="nav-user-badge" class="text-[10px] text-slate-400 font-medium">COB • 298412</div>
+              </div>
+              <svg class="w-3.5 h-3.5 text-slate-400 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+
+            <!-- Account & Settings Dropdown Menu -->
+            <div id="user-profile-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-3xl shadow-2xl border border-slate-200 p-4 z-50 animate-scale-up space-y-3.5">
+              <!-- Profile Header Card -->
+              <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                <img id="dropdown-user-avatar" src="images/avatar_alex.jpg" class="w-12 h-12 rounded-full object-cover ring-2 ring-blue-500/40">
+                <div class="flex-1 min-w-0">
+                  <h4 id="dropdown-user-name" class="font-extrabold text-sm text-slate-900 truncate">Alex Tan</h4>
+                  <p id="dropdown-user-faculty" class="text-[11px] text-slate-500 truncate">College of Business (COB)</p>
+                  <span id="dropdown-user-matric" class="text-[10px] font-mono text-blue-600 font-bold">Matric: 298412</span>
+                </div>
+              </div>
+
+              <!-- Quick Balance & Points Summary -->
+              <div class="grid grid-cols-2 gap-2 text-center">
+                <div class="p-2.5 rounded-xl bg-blue-50/70 border border-blue-100">
+                  <span class="text-[10px] text-slate-500 font-semibold block">Wallet Balance</span>
+                  <span id="dropdown-user-balance" class="text-sm font-black text-blue-700">RM 186.40</span>
+                </div>
+                <div class="p-2.5 rounded-xl bg-amber-50/70 border border-amber-100">
+                  <span class="text-[10px] text-slate-500 font-semibold block">Loyalty Points</span>
+                  <span id="dropdown-user-points" class="text-sm font-black text-amber-700">640 pts</span>
+                </div>
+              </div>
+
+              <!-- Switch Account Section -->
+              <div>
+                <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">Switch Demo Account</span>
+                <div id="account-switcher-list" class="space-y-1.5">
+                  <!-- Injected dynamically via app.js -->
+                </div>
+              </div>
+
+              <!-- Accessibility Controls in Profile -->
+              <div class="pt-2 border-t border-slate-100 space-y-2">
+                <div class="flex items-center justify-between text-xs font-semibold text-slate-700">
+                  <span class="flex items-center gap-1.5"><span>👓</span> Senior Mode (Large Text)</span>
+                  <input type="checkbox" id="profile-toggle-senior" onchange="toggleSeniorMode()" class="rounded text-purple-600 focus:ring-purple-500 h-4 w-4">
+                </div>
+                <div class="flex items-center justify-between text-xs font-semibold text-slate-700">
+                  <span class="flex items-center gap-1.5"><span>🌙</span> Dark Mode</span>
+                  <input type="checkbox" id="profile-toggle-dark" onchange="toggleDarkMode()" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+                </div>
+              </div>
+
+              <!-- Log Out Action Button -->
+              <div class="pt-2 border-t border-slate-100">
+                <button type="button" onclick="performLogout()" class="w-full py-2.5 px-3 bg-red-50 hover:bg-red-100 text-red-700 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                  <span>Log Out of PayNow</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================================================== -->
+  <!-- MAIN APPLICATION CONTENT -->
+  <!-- ======================================================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ====================================================== -->
+    <!-- TAB 1: HOME DASHBOARD -->
+    <!-- ====================================================== -->
+    <section id="tab-home" class="tab-panel space-y-6">
+      
+      <!-- HERO BANNER (Matches user mockup media_1792739782724_0b3cfc73.png) -->
+      <div class="hero-gradient rounded-3xl p-6 sm:p-8 text-white relative shadow-xl shadow-blue-600/10">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10">
+          
+          <!-- Banner Text Left -->
+          <div class="lg:col-span-7 space-y-3">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold tracking-wide">
+              <span>Selamat Datang</span> • <span>Welcome back</span>
+            </div>
+            <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+              Alex, keep going cashless today! 🚀
+            </h1>
+            <p class="text-blue-100 text-xs sm:text-sm max-w-xl leading-relaxed">
+              Fast, secure campus DuitNow QR payments. Pre-payment merchant verification and fraud protection safeguard every single sen.
+            </p>
+            <div class="flex flex-wrap items-center gap-2.5 pt-2">
+              <span class="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-500/25 border border-emerald-400/40 px-3 py-1 rounded-full">
+                🛡️ Fraud Guard Active
+              </span>
+              <button onclick="openDuitNowTutorialModal(1)" class="inline-flex items-center gap-1.5 text-xs font-bold bg-amber-400 hover:bg-amber-300 text-slate-900 px-3.5 py-1 rounded-full shadow-sm transition-all cursor-pointer">
+                <span>🔰</span>
+                <span>First Time? Learn How to Pay in 3 Steps</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Glassmorphism Wallet Card Right -->
+          <div class="lg:col-span-5">
+            <div class="glass-blue-card rounded-2xl p-6 space-y-4">
+              <div class="flex items-center justify-between text-xs font-semibold text-blue-100">
+                <span class="flex items-center gap-1.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                  Simulated Wallet Balance
+                </span>
+                <button id="wallet-topup-btn" class="hover:underline flex items-center gap-1 text-[11px] bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md transition-colors">
+                  <span>+ Top Up</span>
+                </button>
+              </div>
+
+              <!-- Balance Display -->
+              <div>
+                <div class="text-3xl sm:text-4xl font-black tracking-tight text-white wallet-balance-val">
+                  RM 186.40
+                </div>
+                <div class="text-[11px] text-blue-200 mt-1 flex items-center gap-1">
+                  <span>✓ Protected by UUM PayNow Guard</span>
+                </div>
+              </div>
+
+              <!-- Scan to Pay CTA -->
+              <button onclick="switchTab('pay')" class="w-full py-3.5 px-4 rounded-xl bg-white text-blue-700 hover:bg-blue-50 font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 group">
+                <svg class="w-5 h-5 text-blue-600 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                <span>Scan & Pay Stall</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- UUM Collective Milestone Banner (Handbook Direction B: Shared Milestone Quest) -->
+      <div class="p-4 rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs border border-blue-800/40">
+        <div class="flex items-center gap-3">
+          <span class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-xl shrink-0">
+            🏆
+          </span>
+          <div>
+            <span class="text-[10px] font-extrabold uppercase tracking-widest text-amber-300 block">Handbook Direction B • Collective Goal</span>
+            <p id="home-milestone-ticker-text" class="text-xs font-extrabold text-white">
+              🎓 UUM Collective Goal: 78.4% achieved (7,840/10,000 digital meals). COB is leading!
+            </p>
+          </div>
+        </div>
+        <button onclick="switchTab('rewards'); switchRewardsSubTab('ranks');" class="px-4 py-2 bg-white/15 hover:bg-white/25 text-white text-xs font-bold rounded-xl transition-all shrink-0 cursor-pointer flex items-center gap-1.5 self-start sm:self-auto">
+          <span>View Faculty Battle</span>
+          <span>➔</span>
+        </button>
+      </div>
+
+      <!-- PENDING SPLITS BANNER (Matches user mockup media_1792742855533_cdcfcf05.png) -->
+      <div class="p-5 sm:p-6 rounded-3xl bg-amber-50/95 border border-amber-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-black uppercase tracking-wider">
+              <span>⏱️</span> PENDING SPLITS
+            </span>
+            <span id="home-unpaid-count-badge" class="text-xs font-bold text-amber-800">
+              3 Unpaid
+            </span>
+          </div>
+          <h3 id="home-total-owed-title" class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            Friends owe you RM 38.50
+          </h3>
+          <p id="home-total-owed-sub" class="text-xs text-slate-600">
+            3 students haven't settled dinner at campus canteens yet.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <button onclick="openWhatsAppReminderModal()" class="px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-2xl text-xs font-extrabold shadow-sm flex items-center justify-center gap-2 transition-all">
+            <span>✈️</span>
+            <span>1-Click Remind</span>
+          </button>
+          <button onclick="switchTab('split')" class="px-5 py-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-2xl text-xs font-bold shadow-xs transition-colors">
+            View
+          </button>
+        </div>
+      </div>
+
+      <!-- METRIC STAT CARDS (4 Columns matching mockup media_1792739798783_54851d23.png) -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Card 1: This Month Spent -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-all">
+          <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
+            <span class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">📉</span>
+            This Month Spent
+          </div>
+          <div class="text-2xl font-black text-slate-900 month-spent-val">
+            RM 145.20
+          </div>
+          <span class="text-[10px] text-slate-400 font-medium">Auto-recorded to analytics</span>
+        </div>
+
+        <!-- Card 2: My Points -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-all">
+          <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
+            <span class="w-6 h-6 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">⭐</span>
+            My Points
+          </div>
+          <div class="text-2xl font-black text-slate-900 user-points-val">
+            640 pts
+          </div>
+          <button onclick="switchTab('rewards')" class="text-[10px] text-blue-600 font-bold hover:underline">
+            Redeem vouchers →
+          </button>
+        </div>
+
+        <!-- Card 3: Weekly Payments -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-all">
+          <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
+            <span class="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">📅</span>
+            Weekly Payments
+          </div>
+          <div class="text-2xl font-black text-slate-900 weekly-payments-val">
+            5/5
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
+            <div class="bg-blue-600 h-1.5 rounded-full w-full"></div>
+          </div>
+        </div>
+
+        <!-- Card 4: Daily Streak -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-all">
+          <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
+            <span class="w-6 h-6 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">🔥</span>
+            Daily Streak
+          </div>
+          <div class="text-2xl font-black text-slate-900 user-streak-val">
+            3 Days
+          </div>
+          <span class="text-[10px] text-slate-400 font-medium">Stamp card: 6/10 stamps</span>
+        </div>
+
+      </div>
+
+      <!-- QUICK ACTION BUTTONS (4 Pills with round colorful icons) -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        
+        <!-- Action 1: Voice Pay -->
+        <button id="voice-pay-btn" class="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/80 hover:border-blue-400 hover:shadow-md transition-all text-left group">
+          <div class="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/30 group-hover:scale-105 transition-transform">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+          </div>
+          <div>
+            <div class="font-bold text-slate-900 text-xs sm:text-sm">Voice Pay</div>
+            <span class="text-[10px] text-slate-400 leading-tight">Speak amount, zero typing</span>
+          </div>
+        </button>
+
+        <!-- Action 2: Receipt OCR Split -->
+        <button onclick="switchTab('split')" class="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/80 hover:border-emerald-400 hover:shadow-md transition-all text-left group">
+          <div class="w-11 h-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-emerald-500/30 group-hover:scale-105 transition-transform">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <div>
+            <div class="font-bold text-slate-900 text-xs sm:text-sm">Scan & Split</div>
+            <span class="text-[10px] text-slate-400 leading-tight">Assign dishes & track debt</span>
+          </div>
+        </button>
+
+        <!-- Action 3: Merchant Map -->
+        <button onclick="switchTab('rewards')" class="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/80 hover:border-amber-400 hover:shadow-md transition-all text-left group">
+          <div class="w-11 h-11 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-amber-500/30 group-hover:scale-105 transition-transform">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <div>
+            <div class="font-bold text-slate-900 text-xs sm:text-sm">Campus Map</div>
+            <span class="text-[10px] text-slate-400 leading-tight">Explore stalls & routes</span>
+          </div>
+        </button>
+
+        <!-- Action 4: Fraud Guard Simulator -->
+        <button onclick="switchTab('fraud')" class="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/80 hover:border-red-400 hover:shadow-md transition-all text-left group">
+          <div class="w-11 h-11 rounded-2xl bg-red-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-red-500/30 group-hover:scale-105 transition-transform">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <div>
+            <div class="font-bold text-slate-900 text-xs sm:text-sm">Fraud Academy</div>
+            <span class="text-[10px] text-slate-400 leading-tight">Simulate scam scenarios</span>
+          </div>
+        </button>
+
+      </div>
+
+      <!-- SUSPICIOUS TRANSACTION INTERCEPT ALERT BANNER -->
+      <div class="p-4 sm:p-5 rounded-2xl bg-red-50/90 border border-red-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+        <div class="flex items-start gap-3">
+          <div class="w-9 h-9 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-black text-red-900 text-xs sm:text-sm">Suspicious Transaction Intercepted</span>
+              <span class="text-[10px] font-bold bg-red-200 text-red-900 px-2 py-0.5 rounded-full">BLOCKED</span>
+            </div>
+            <p class="text-xs text-red-700 mt-0.5 leading-relaxed">
+              <strong>Oct 21, 23:15:</strong> A payment request of <strong>RM 120.00</strong> from unverified account <code class="bg-red-100 px-1 py-0.5 rounded text-red-900">Cafe Vista Official</code> was blocked. Scanned QR did not match the authentic UUM merchant registry.
+            </p>
+          </div>
+        </div>
+        <button onclick="switchTab('fraud')" class="shrink-0 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center justify-center gap-1.5">
+          <span>Learn to Spot Fake QR</span>
+          <span>→</span>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ====================================================== -->
+    <!-- TAB 2: CAMPUS MERCHANTS -->
+    <!-- ====================================================== -->
+    <section id="tab-merchants" class="tab-panel hidden space-y-6">
+      
+      <!-- Search & Filters Header -->
+      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">Discover Campus Merchants</h2>
+          <p class="text-xs text-slate-500 mt-1">Explore participating canteens, hawker stalls, and exclusive student discounts across Sintok campus.</p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="relative">
+          <input type="text" id="merchant-search-input" placeholder="Search canteens, dishes (Nasi Lemak, Roti Canai...), or routes..." class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
+          <svg class="w-5 h-5 text-slate-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+
+        <!-- Category Pills -->
+        <div class="flex flex-wrap gap-2 pt-1">
+          <button data-category="All" class="merchant-filter-pill px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white transition-all shadow-xs">
+            All Canteens
+          </button>
+          <button data-category="Laluan A" class="merchant-filter-pill px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-300 transition-all">
+            Laluan A
+          </button>
+          <button data-category="Laluan B" class="merchant-filter-pill px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-300 transition-all">
+            Laluan B
+          </button>
+          <button data-category="Laluan C" class="merchant-filter-pill px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-300 transition-all">
+            Laluan C
+          </button>
+          <button data-category="Other" class="merchant-filter-pill px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-300 transition-all">
+            Other / Academic
+          </button>
+        </div>
+      </div>
+
+      <!-- Merchant Grid -->
+      <div id="merchants-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+
+    </section>
+
+    <!-- ====================================================== -->
+    <!-- TAB 3: SIMULATED PAYMENT & SAFETY LOOP -->
+    <!-- ====================================================== -->
+    <section id="tab-pay" class="tab-panel hidden space-y-6">
+      
+      <div class="max-w-4xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">Complete Your Payment</h2>
+            <p class="text-xs text-slate-500">Every transaction displays recipient merchant details and fraud verification before payment.</p>
+          </div>
+          <span class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">
+            DuitNow QR Ready
+          </span>
+        </div>
+
+        <!-- Voice Pay Simulation Banner -->
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0">
+              🎙️
+            </div>
+            <div>
+              <span class="font-bold text-xs uppercase tracking-wider text-blue-200">Voice Assistant Payment</span>
+              <p id="voice-status-text" class="text-xs font-medium text-white">Click to speak: "Pay RM 6.50 to Inasis TNB"</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="voice-wave-ring" class="hidden w-3 h-3 rounded-full bg-emerald-400 mic-active-ring"></span>
+            <button onclick="startVoiceRecognition()" class="px-4 py-2 bg-white text-blue-700 hover:bg-blue-50 text-xs font-bold rounded-xl transition-all shadow-sm">
+              Tap & Speak
+            </button>
+          </div>
+        </div>
+
+        <!-- Main Payment Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- Left Column: Merchant & Order Details -->
+          <div class="lg:col-span-7 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-5">
+            
+            <!-- Canteen Selector -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Select Campus Stall</label>
+                <button type="button" onclick="openDuitNowTutorialModal(1)" class="text-xs text-blue-600 hover:underline font-bold flex items-center gap-1 cursor-pointer">
+                  <span>🔰</span>
+                  <span>How to Pay (3-Step Guide)</span>
+                </button>
+              </div>
+              <select id="pay-stall-select" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <!-- Injected via app.js -->
+              </select>
+            </div>
+
+            <!-- Merchant Profile Preview Card -->
+            <div id="pay-merchant-preview">
+              <!-- Injected via app.js -->
+            </div>
+
+            <!-- Quick Dish Selection from Seed Menu -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Popular Dishes (Quick Select)</label>
+              <div id="pay-menu-dishes" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <!-- Injected via app.js -->
+              </div>
+            </div>
+
+            <!-- Custom Amount Input -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Payment Amount (RM)</label>
+              <div class="relative">
+                <span class="absolute left-4 top-3 text-slate-400 font-bold text-sm">RM</span>
+                <input type="number" id="pay-amount-input" step="0.10" min="0.10" placeholder="0.00" class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-base font-black focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+              </div>
+            </div>
+
+            <!-- Voucher Selection Box (Injected via app.js renderPaymentVoucherSelector) -->
+            <div id="pay-voucher-selector-box" class="p-3 bg-blue-50/60 rounded-xl border border-blue-200">
+              <!-- Injected via app.js -->
+            </div>
+
+            <!-- Error Banner -->
+            <div id="pay-error-banner" class="hidden p-3 rounded-xl bg-red-50 border border-red-200">
+              <!-- Error message injected here -->
+            </div>
+
+            <!-- Price Breakdown Summary -->
+            <div class="pt-3 border-t border-slate-100 space-y-1.5">
+              <div class="flex items-center justify-between text-xs text-slate-500">
+                <span>Subtotal</span>
+                <span id="pay-subtotal-display" class="font-bold text-slate-700">RM 0.00</span>
+              </div>
+              <div id="pay-discount-row" class="hidden flex items-center justify-between text-xs text-emerald-600 font-bold">
+                <span>Voucher Discount</span>
+                <span id="pay-discount-display">- RM 0.00</span>
+              </div>
+              <div class="flex items-center justify-between pt-1">
+                <div>
+                  <span class="text-xs text-slate-500 font-medium">Final Charge</span>
+                  <div id="pay-total-display" class="text-2xl font-black text-slate-900">RM 0.00</div>
+                </div>
+                <span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-full">
+                  +10 Points Reward
+                </span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column: QR Scanner & Safety Checkout -->
+          <div class="lg:col-span-5 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-6">
+            
+            <!-- Simulated QR Frame -->
+            <div class="space-y-3 text-center">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Simulated Merchant QR</span>
+              <div class="relative w-48 h-48 mx-auto p-3 bg-slate-50 rounded-2xl border-2 border-dashed border-blue-400 flex items-center justify-center qr-scanner-frame shadow-xs">
+                <img src="images/duitnow_sample_qr.svg" alt="DuitNow QR" class="w-full h-full object-contain">
+              </div>
+              <p class="text-[11px] text-slate-400">Scan at the merchant counter or click below to verify.</p>
+            </div>
+
+            <!-- Demo Status Selector (Success, Failed, Pending) -->
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Simulation Test Mode:</span>
+              <div class="grid grid-cols-3 gap-1.5">
+                <button type="button" onclick="state.payment.statusMode='success'; showToast('Test mode: Success');" class="py-1 px-2 rounded-lg bg-emerald-100 text-emerald-800 text-[10px] font-bold hover:bg-emerald-200 transition-colors">
+                  Success ✓
+                </button>
+                <button type="button" onclick="state.payment.statusMode='pending'; showToast('Test mode: Pending');" class="py-1 px-2 rounded-lg bg-amber-100 text-amber-800 text-[10px] font-bold hover:bg-amber-200 transition-colors">
+                  Pending ⏳
+                </button>
+                <button type="button" onclick="state.payment.statusMode='failed'; showToast('Test mode: Failed');" class="py-1 px-2 rounded-lg bg-red-100 text-red-800 text-[10px] font-bold hover:bg-red-200 transition-colors">
+                  Failed ✕
+                </button>
+              </div>
+            </div>
+
+            <!-- Action Button -->
+            <button type="button" onclick="openSecurityVerificationModal()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/25 transition-all flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <span>Verify Merchant & Pay</span>
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ====================================================== -->
+    <!-- TAB 4: SCAN & SPLIT HUB (AA BILL SPLITTING & DEBT LEDGER) -->
+    <!-- ====================================================== -->
+    <section id="tab-split" class="tab-panel hidden space-y-6">
+      
+      <div class="max-w-6xl mx-auto space-y-6">
+        
+        <!-- PENDING SPLITS BANNER (Matches user mockup media_1792742855533_cdcfcf05.png) -->
+        <div class="p-5 sm:p-6 rounded-3xl bg-amber-50/95 border border-amber-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-black uppercase tracking-wider">
+                <span>⏱️</span> PENDING SPLITS
+              </span>
+              <span id="split-unpaid-count-badge" class="text-xs font-bold text-amber-800">
+                3 Unpaid
+              </span>
+            </div>
+            <h3 id="split-total-owed-title" class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              Friends owe you RM 38.50
+            </h3>
+            <p id="split-total-owed-sub" class="text-xs text-slate-600">
+              3 students haven't settled shared canteen meals yet.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="openWhatsAppReminderModal()" class="px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-2xl text-xs font-extrabold shadow-sm flex items-center justify-center gap-2 transition-all">
+              <span>✈️</span>
+              <span>1-Click Remind</span>
+            </button>
+            <button onclick="document.getElementById('cumulative-debt-section').scrollIntoView({behavior: 'smooth'})" class="px-5 py-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-2xl text-xs font-bold shadow-xs transition-colors">
+              View Ledger
+            </button>
+          </div>
+        </div>
+
+        <!-- Section 1: Interactive Receipt Scanner & Custom Assignment -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- Left Column: Modern Receipt Scanner & Real Upload (Matches Images 3 & 4) -->
+          <div class="lg:col-span-6 space-y-5">
+            
+            <!-- STATE A: INITIAL SCANNER LAUNCHPAD (Matches media_1792760856319_5fc49e22.png) -->
+            <div id="receipt-scan-initial-card" class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs text-center space-y-5">
+              <div class="flex items-center justify-between pb-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold">
+                  <span>‹</span> Scan & Split Bill
+                </span>
+                <span class="text-[10px] text-slate-400 font-mono">Camera / OCR</span>
+              </div>
+
+              <!-- Green Reticle Viewfinder Icon -->
+              <div class="w-20 h-20 mx-auto rounded-3xl bg-emerald-50 border-2 border-emerald-300 flex items-center justify-center text-3xl text-emerald-600 shadow-inner">
+                <span>⛶</span>
+              </div>
+
+              <div>
+                <h3 class="text-xl font-extrabold text-slate-900">Scan a Receipt</h3>
+                <p class="text-xs text-slate-500 max-w-xs mx-auto mt-1">
+                  Upload a receipt image or try our sample receipt to simulate OCR scanning
+                </p>
+              </div>
+
+              <div class="max-w-sm mx-auto space-y-2.5 pt-1">
+                <!-- Button 1: Solid Green Sample Receipt -->
+                <button type="button" onclick="startReceiptScan(false)" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold shadow-md shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                  <span>↑</span>
+                  <span>Try Sample Receipt</span>
+                </button>
+
+                <!-- Button 2: Light Green Real File Upload Input -->
+                <label class="w-full py-3.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer">
+                  <span>⛶</span>
+                  <span>Upload Your Receipt</span>
+                  <input type="file" id="receipt-image-upload" accept="image/*" class="hidden" onchange="handleReceiptFileUpload(event)">
+                </label>
+              </div>
+
+              <p class="text-[11px] text-slate-400 font-medium">Demo mode — uses simulated receipt data</p>
+            </div>
+
+            <!-- STATE B: SCANNING LASER ANIMATION (Matches media_1792760985693_3a2ce428.png) -->
+            <div id="receipt-scanning-card" class="hidden bg-white rounded-3xl p-8 border border-slate-200/80 shadow-xs text-center space-y-6">
+              <div class="flex items-center pb-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold">
+                  <span>‹</span> Scan & Split Bill
+                </span>
+              </div>
+
+              <!-- Animated Viewfinder with Laser Beam -->
+              <div class="relative w-24 h-24 mx-auto rounded-3xl bg-emerald-50 border-2 border-emerald-400 flex items-center justify-center text-4xl text-emerald-600 overflow-hidden shadow-inner">
+                <div class="scan-laser-beam"></div>
+                <span>⛶</span>
+              </div>
+
+              <div>
+                <h3 class="text-xl font-extrabold text-slate-900">Scanning Receipt...</h3>
+                <p class="text-xs text-slate-500 mt-1">Extracting merchant, items, and prices</p>
+              </div>
+
+              <!-- Dynamic Progress Bar -->
+              <div class="max-w-xs mx-auto space-y-2">
+                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                  <div id="receipt-scan-progress" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-300" style="width: 15%"></div>
+                </div>
+                <span id="receipt-scan-step-text" class="text-[11px] text-slate-500 font-mono block">Reading physical receipt pixels...</span>
+              </div>
+            </div>
+
+            <!-- STATE C: EXTRACTED ITEMS RESULT & FRIEND ASSIGNMENT -->
+            <div id="receipt-result-section" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-5">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-xs font-bold text-slate-700 uppercase tracking-wider block">1. Parsed Dishes & Assignments</span>
+                  <span class="text-[11px] text-slate-400">OCR successfully extracted each dish item.</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span id="ocr-status-tag" class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                    OCR Verified ✓
+                  </span>
+                  <button type="button" onclick="rescanReceipt()" class="text-xs font-bold text-blue-600 hover:underline px-2 py-1 bg-blue-50 rounded-lg cursor-pointer">
+                    ↻ Rescan
+                  </button>
+                </div>
+              </div>
+
+              <!-- Receipt Preset Picker & Add Item -->
+              <div class="flex items-center gap-2">
+                <select id="split-receipt-select" class="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-1 focus:ring-blue-500 focus:outline-none">
+                  <option value="0">Sample 1: Kafe Inasis TM Lunch (RM 13.30)</option>
+                  <option value="1">Sample 2: Alumni Junction Cafe (RM 16.50)</option>
+                  <option value="2">Sample 3: Kafe YAB Night Supper (RM 15.50)</option>
+                </select>
+                <button type="button" onclick="addCustomDishItem()" class="px-3 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold transition-colors shrink-0 cursor-pointer">
+                  + Extra Item
+                </button>
+              </div>
+
+              <!-- Scanning Frame Breakdown -->
+              <div class="relative bg-slate-900 text-white rounded-2xl p-5 overflow-hidden shadow-inner font-mono text-xs space-y-3">
+                <div id="ocr-beam" class="ocr-scanner-beam hidden"></div>
+                
+                <div class="flex items-center justify-between pb-3 border-b border-slate-700">
+                  <div>
+                    <div class="font-bold text-sm tracking-wider text-emerald-400" id="ocr-merchant-name">Kafe Inasis TM</div>
+                    <div class="text-[10px] text-slate-400" id="ocr-receipt-date">23 Oct 2026, 12:45 PM</div>
+                  </div>
+                  <!-- Optional User Uploaded Thumbnail -->
+                  <img id="ocr-uploaded-thumbnail" class="hidden w-10 h-10 rounded-lg object-cover ring-1 ring-slate-600" alt="Receipt Upload">
+                </div>
+
+                <!-- OCR Extracted Items with Friend Assignment Selectors -->
+                <div class="py-2 space-y-2.5" id="ocr-items-breakdown">
+                  <!-- Dynamically populated with interactive friend assignment dropdowns via app.js -->
+                </div>
+
+                <div class="pt-3 border-t border-slate-700 flex justify-between font-bold text-sm">
+                  <span>TOTAL RECEIPT</span>
+                  <span id="ocr-receipt-total" class="text-emerald-400">RM 13.30</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column: Split Mode, Calculations & DuitNow QR -->
+          <div class="lg:col-span-6 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-5">
+            
+            <div class="space-y-4">
+              <!-- Mode Switcher -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-xs font-bold text-slate-700 uppercase tracking-wider block">2. Split Method</span>
+                  <span class="text-[11px] text-slate-400">Itemized dishes or even AA split</span>
+                </div>
+                <div class="flex items-center p-1 bg-slate-100 rounded-xl">
+                  <button onclick="setSplitMode('itemized')" data-mode="itemized" class="split-mode-btn px-3 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white shadow-xs">
+                    By Dishes
+                  </button>
+                  <button onclick="setSplitMode('equal')" data-mode="equal" class="split-mode-btn px-3 py-1 rounded-lg text-xs font-bold text-slate-700">
+                    Equal (AA)
+                  </button>
+                </div>
+              </div>
+
+              <!-- Equal Split Participant Checkbox Bar (Shown when mode == 'equal') -->
+              <div id="equal-split-friend-picker" class="hidden p-3 bg-blue-50/70 border border-blue-200 rounded-2xl space-y-2">
+                <span class="text-[10px] font-bold text-blue-900 uppercase tracking-wider block">Select friends sharing this bill:</span>
+                <div class="flex flex-wrap gap-2 text-xs">
+                  <label class="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-slate-200 cursor-pointer font-bold text-slate-800">
+                    <input type="checkbox" checked disabled class="rounded text-blue-600"> Alex Tan (You)
+                  </label>
+                  <label class="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-slate-200 cursor-pointer text-slate-700">
+                    <input type="checkbox" checked onchange="toggleEqualSplitFriend('f-1', this.checked)" class="rounded text-blue-600"> Sarah Lim
+                  </label>
+                  <label class="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-slate-200 cursor-pointer text-slate-700">
+                    <input type="checkbox" checked onchange="toggleEqualSplitFriend('f-2', this.checked)" class="rounded text-blue-600"> Amirul Hakim
+                  </label>
+                  <label class="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-slate-200 cursor-pointer text-slate-700">
+                    <input type="checkbox" onchange="toggleEqualSplitFriend('f-3', this.checked)" class="rounded text-blue-600"> Daniel Wong
+                  </label>
+                  <label class="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-slate-200 cursor-pointer text-slate-700">
+                    <input type="checkbox" onchange="toggleEqualSplitFriend('f-4', this.checked)" class="rounded text-blue-600"> Siti Nurhaliza
+                  </label>
+                </div>
+              </div>
+
+              <!-- Friends Breakdown List -->
+              <div class="space-y-2">
+                <div class="flex items-center justify-between text-xs text-slate-500 font-semibold px-1">
+                  <span>Participants & Calculated Shares:</span>
+                  <button onclick="addNewFriendToContacts()" class="text-blue-600 hover:underline font-bold text-[11px]">
+                    + Add Friend
+                  </button>
+                </div>
+                <div id="split-friends-breakdown" class="space-y-2">
+                  <!-- Injected via app.js -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic DuitNow QR for selected friend (Matches Image media_1792742779739_e17c4606.png) -->
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider block">Friend's DuitNow QR</span>
+                  <p id="split-qr-friend-name" class="text-xs font-bold text-slate-800">Scan to pay exact share: RM 13.00 (Sarah Lim)</p>
+                </div>
+                <div id="split-qr-amount" class="text-xl font-black text-slate-900">RM 13.00</div>
+              </div>
+              <div class="flex justify-center p-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                <img src="images/duitnow_sample_qr.svg" class="w-28 h-28 object-contain">
+              </div>
+              <p class="text-[10px] text-slate-400 text-center">Friend can scan directly to reimburse your UUM PayNow Wallet.</p>
+            </div>
+
+            <!-- "SAVE / RECORD TO DEBT LEDGER" PRIMARY ACTION -->
+            <button onclick="recordActiveBillToLedger()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-extrabold shadow-md shadow-blue-500/25 transition-all flex items-center justify-center gap-2">
+              <span>💾</span>
+              <span>Save & Record to Friend Debt Ledger</span>
+            </button>
+
+          </div>
+
+        </div>
+
+        <!-- Section 2: Cumulative Friend Debt Ledger (Multi-bill accumulation) -->
+        <div id="cumulative-debt-section" class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-lg">📊</span>
+                <h3 class="font-extrabold text-slate-900 text-base sm:text-lg">Cumulative Friend Debt Ledger (Who Owes Me Money)</h3>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Automatically tracks accumulated unpaid bills across multiple meals and study sessions.
+              </p>
+            </div>
+            <button onclick="openWhatsAppReminderModal()" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 self-start sm:self-auto">
+              <span>🔔 Send One-Click WhatsApp Reminders</span>
+            </button>
+          </div>
+
+          <!-- Cumulative Friend Debt Cards -->
+          <div id="cumulative-debts-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Dynamically populated by app.js with multi-bill breakdowns! -->
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ====================================================== -->
+    <!-- TAB 5: SPENDING ANALYTICS -->
+    <!-- ====================================================== -->
+    <section id="tab-analytics" class="tab-panel hidden space-y-6">
+      
+      <!-- Analytics Header with Student vs Merchant Perspective Switcher -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">Spending & Merchant Intelligence Hub</h2>
+          <p class="text-xs text-slate-500">Toggle between your personal student meal budget and canteen merchant business analytics.</p>
+        </div>
+        
+        <!-- Perspective Switcher Tabs -->
+        <div class="flex items-center p-1 bg-slate-100 rounded-2xl border border-slate-200/80">
+          <button id="analytics-role-btn-student" onclick="switchAnalyticsRole('student')" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-1.5">
+            <span>🎓</span>
+            <span>Student Spending</span>
+          </button>
+          <button id="analytics-role-btn-merchant" onclick="switchAnalyticsRole('merchant')" class="px-4 py-2 bg-white text-slate-600 border border-slate-200 hover:border-slate-300 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
+            <span>🏪</span>
+            <span>Canteen Merchant BI</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- VIEW A: STUDENT PERSONAL EXPENSE ANALYTICS -->
+      <!-- ============================================== -->
+      <div id="analytics-student-view" class="space-y-6">
+        
+        <!-- Student KPI Quick Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Oct Spent</span>
+            <div class="text-xl sm:text-2xl font-black text-slate-900 mt-1 user-spent-val">RM 145.20</div>
+            <span class="text-[10px] text-emerald-600 font-bold">Within RM 250 Budget</span>
+          </div>
+          <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Avg Meal Cost</span>
+            <div class="text-xl sm:text-2xl font-black text-blue-600 mt-1">RM 5.80</div>
+            <span class="text-[10px] text-slate-400">Campus Benchmark: RM 6.20</span>
+          </div>
+          <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Vouchers Saved</span>
+            <div class="text-xl sm:text-2xl font-black text-emerald-600 mt-1">RM 12.50</div>
+            <span class="text-[10px] text-emerald-600 font-bold">4 Discounts Redeemed</span>
+          </div>
+          <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Top Canteen</span>
+            <div class="text-xl sm:text-2xl font-black text-amber-600 mt-1">Inasis TNB</div>
+            <span class="text-[10px] text-slate-400">14 visits this month</span>
+          </div>
+        </div>
+
+        <!-- Charts Row: Expense Categories & Daily Trend -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- Category Donut Chart -->
+          <div class="lg:col-span-5 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm mb-1">Expense Categories</h3>
+              <p class="text-xs text-slate-400 mb-4">Breakdown of RM 145.20 spent across campus services.</p>
+            </div>
+            <div class="relative h-64 w-full flex items-center justify-center">
+              <canvas id="category-donut-chart"></canvas>
+            </div>
+            <div class="pt-4 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
+              <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-600"></span> Food: 68%</div>
+              <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Mart: 18%</div>
+              <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500"></span> Bus: 8%</div>
+              <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-purple-500"></span> Print: 6%</div>
+            </div>
+          </div>
+
+          <!-- Daily Spending Trend Bar Chart -->
+          <div class="lg:col-span-7 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm mb-1">Weekly Expense Trend</h3>
+              <p class="text-xs text-slate-400 mb-4">Daily spending from Monday to Sunday.</p>
+            </div>
+            <div class="relative h-64 w-full">
+              <canvas id="daily-trend-chart"></canvas>
+            </div>
+            <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <span>Daily Average: <strong>RM 20.74</strong></span>
+              <span class="text-emerald-600 font-semibold">Under monthly budget by 14%</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Full Transaction History Table -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm">Full Transaction Ledger</h3>
+              <p class="text-xs text-slate-500">Every scanned payment and bill split recorded with reference IDs.</p>
+            </div>
+            <span class="text-xs text-slate-400 font-mono">Live Sync</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  <th class="py-2.5 px-4">Transaction / Ref ID</th>
+                  <th class="py-2.5 px-4">Category</th>
+                  <th class="py-2.5 px-4">Timestamp</th>
+                  <th class="py-2.5 px-4">Status</th>
+                  <th class="py-2.5 px-4 text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody id="transactions-stream-body">
+                <!-- Injected via app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ============================================== -->
+      <!-- VIEW B: CANTEEN MERCHANT BUSINESS INTELLIGENCE -->
+      <!-- ============================================== -->
+      <div id="analytics-merchant-view" class="hidden space-y-6">
+        
+        <!-- Canteen Merchant BI KPI Summary -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          <div class="bg-white rounded-2xl p-4 border border-blue-200/80 shadow-2xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Today's Foot Traffic</span>
+            <div class="text-xl sm:text-2xl font-black text-blue-600 mt-1">1,497 Patrons</div>
+            <span class="text-[10px] text-emerald-600 font-bold">+18.4% vs Last Thursday</span>
+          </div>
+          <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Peak Rush Window</span>
+            <div class="text-xl sm:text-2xl font-black text-slate-900 mt-1">12:00 - 1:45 PM</div>
+            <span class="text-[10px] text-amber-600 font-bold">480 transactions / hr</span>
+          </div>
+          <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Top Selling Category</span>
+            <div class="text-xl sm:text-2xl font-black text-emerald-600 mt-1">Hot Meals (52%)</div>
+            <span class="text-[10px] text-slate-400">Rice sets & poultry</span>
+          </div>
+          <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Scam & Dispute Rate</span>
+            <div class="text-xl sm:text-2xl font-black text-emerald-600 mt-1">0.0% Clean</div>
+            <span class="text-[10px] text-emerald-600 font-bold">Zero Fraud Reports</span>
+          </div>
+        </div>
+
+        <!-- Charts Row: Rush Hours Volume & Product Category Breakdown -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- Canteen Rush Hours Bar Chart -->
+          <div class="lg:col-span-7 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-slate-900 text-sm">Hourly Customer Foot Traffic & Rush Windows</h3>
+                <p class="text-xs text-slate-400">Payment volume across Sintok campus dining hours (Breakfast to Supper).</p>
+              </div>
+              <span class="text-[10px] font-bold bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full">
+                Real-Time Density
+              </span>
+            </div>
+            <div class="relative h-64 w-full">
+              <canvas id="merchant-traffic-chart"></canvas>
+            </div>
+            <div class="p-3 rounded-xl bg-blue-50/80 border border-blue-200 text-xs text-blue-900 flex items-center gap-2">
+              <span>💡</span>
+              <span><strong>Merchant Operations Tip:</strong> Pre-pack popular lunch set dishes between 11:30 AM and 12:00 PM to cut counter wait times by 40%.</span>
+            </div>
+          </div>
+
+          <!-- Product Sales Breakdown Donut Chart -->
+          <div class="lg:col-span-5 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-slate-900 text-sm">Product Sales Breakdown (%)</h3>
+                <p class="text-xs text-slate-400">Percentage share of total canteen revenue by product line.</p>
+              </div>
+              <span class="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full">
+                Gross GMV %
+              </span>
+            </div>
+            <div class="relative h-64 w-full flex items-center justify-center">
+              <canvas id="merchant-product-share-chart"></canvas>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100">
+              <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-600"></span> Hot Meals: 52%</div>
+              <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-600"></span> Beverages: 26%</div>
+              <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-600"></span> Fried Snacks: 14%</div>
+              <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-purple-600"></span> Quick Bites: 8%</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Top 5 Best-Selling Dishes Table -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm">Top 5 Best-Selling Campus Dishes</h3>
+              <p class="text-xs text-slate-400">Highest volume dishes sold across all 8 UUM canteens this week.</p>
+            </div>
+            <span class="text-xs font-mono text-slate-400">Ranked by Paid Orders</span>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+            <div class="p-3.5 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 text-center space-y-1">
+              <span class="text-xs font-black text-amber-600">👑 Rank #1</span>
+              <h5 class="text-xs font-bold text-slate-900">Nasi Lemak</h5>
+              <p class="text-[10px] text-slate-500">Kafe TNB (Laluan A)</p>
+              <div class="text-sm font-black text-amber-700">412 Orders</div>
+              <span class="text-[10px] text-slate-400">RM 1,854.00</span>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-1">
+              <span class="text-xs font-black text-slate-600">Rank #2</span>
+              <h5 class="text-xs font-bold text-slate-900">Ayam Goreng</h5>
+              <p class="text-[10px] text-slate-500">Kafe TM (Laluan B)</p>
+              <div class="text-sm font-black text-slate-800">385 Orders</div>
+              <span class="text-[10px] text-slate-400">RM 2,117.50</span>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-1">
+              <span class="text-xs font-black text-amber-800">Rank #3</span>
+              <h5 class="text-xs font-bold text-slate-900">Apam Balik Boker</h5>
+              <p class="text-[10px] text-slate-500">Kafe YAB (Laluan C)</p>
+              <div class="text-sm font-black text-slate-800">290 Orders</div>
+              <span class="text-[10px] text-slate-400">RM 580.00</span>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-1">
+              <span class="text-xs font-black text-slate-600">Rank #4</span>
+              <h5 class="text-xs font-bold text-slate-900">Mee Bandung</h5>
+              <p class="text-[10px] text-slate-500">Kafe BSN (Laluan B)</p>
+              <div class="text-sm font-black text-slate-800">215 Orders</div>
+              <span class="text-[10px] text-slate-400">RM 1,182.50</span>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-1">
+              <span class="text-xs font-black text-slate-600">Rank #5</span>
+              <h5 class="text-xs font-bold text-slate-900">Vanilla Latte</h5>
+              <p class="text-[10px] text-slate-500">Alumni Junction</p>
+              <div class="text-sm font-black text-slate-800">194 Orders</div>
+              <span class="text-[10px] text-slate-400">RM 970.00</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ====================================================== -->
+    <!-- TAB 6: REWARDS, MAP & LEADERBOARD -->
+    <!-- ====================================================== -->
+    <section id="tab-rewards" class="tab-panel hidden space-y-6">
+      
+      <!-- Sub-Navigation Pills (Matches media_1792760633452_31d634c5.png) -->
+      <div class="flex items-center justify-start gap-2 pb-1 overflow-x-auto">
+        <button onclick="switchRewardsSubTab('map')" data-subnav="map" class="rewards-subnav-pill px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-xs transition-all flex items-center gap-1.5 cursor-pointer">
+          <span>🗺️</span>
+          <span>Map</span>
+        </button>
+        <button onclick="switchRewardsSubTab('rewards')" data-subnav="rewards" class="rewards-subnav-pill px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-300 transition-all flex items-center gap-1.5 cursor-pointer">
+          <span>🎁</span>
+          <span>Rewards</span>
+        </button>
+        <button onclick="switchRewardsSubTab('games')" data-subnav="games" class="rewards-subnav-pill px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-300 transition-all flex items-center gap-1.5 cursor-pointer">
+          <span>🎮</span>
+          <span>Games</span>
+        </button>
+        <button onclick="switchRewardsSubTab('ranks')" data-subnav="ranks" class="rewards-subnav-pill px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-300 transition-all flex items-center gap-1.5 cursor-pointer">
+          <span>🏆</span>
+          <span>Ranks</span>
+        </button>
+      </div>
+
+      <!-- Interactive Campus Canteen Map (Dual Engine: Leaflet OSM & Google Maps Embed) -->
+      <div id="campus-map-section" class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-5">
+        
+        <!-- Header with Dual Engine Switcher -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-100">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🗺️</span>
+              <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">UUM Campus Canteen Explorer & Map</h2>
+              <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full">
+                Dual Map Engine
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">
+              Locate all 8 canteens across Sintok campus with custom route pins, live menus, promos, and direct QR checkout.
+            </p>
+          </div>
+
+          <!-- Dual Engine Selector & Recenter -->
+          <div class="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+            <div class="flex items-center p-1 bg-slate-100 rounded-xl text-xs font-bold">
+              <button id="btn-map-leaflet" onclick="switchMapEngine('leaflet')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white shadow-xs transition-all">
+                Option A: Leaflet (OSM)
+              </button>
+              <button id="btn-map-google" onclick="switchMapEngine('google')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:text-slate-900 transition-all">
+                Option B: Google Maps Embed
+              </button>
+            </div>
+            <button onclick="resetMapCampusView()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-2xs">
+              <span>🧭</span>
+              <span>Recenter</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+          
+          <!-- Search Bar -->
+          <div class="md:col-span-5 relative">
+            <input type="text" id="map-canteen-search" placeholder="Search canteen or dish (Nasi Lemak, Latte, TM...)" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+
+          <!-- Route Filter Pills -->
+          <div class="md:col-span-7 flex flex-wrap items-center gap-1.5">
+            <button data-route="All" class="map-route-pill px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-xs transition-all">
+              All (8)
+            </button>
+            <button data-route="Laluan A" class="map-route-pill px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-300 transition-all flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-blue-600"></span> Laluan A (1)
+            </button>
+            <button data-route="Laluan B" class="map-route-pill px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-300 transition-all flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-emerald-600"></span> Laluan B (3)
+            </button>
+            <button data-route="Laluan C" class="map-route-pill px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-300 transition-all flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-amber-600"></span> Laluan C (2)
+            </button>
+            <button data-route="Other" class="map-route-pill px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:border-slate-300 transition-all flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-purple-600"></span> Other (2)
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Map & Interactive Sidebar Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          
+          <!-- Left: Dual Map Container -->
+          <div class="lg:col-span-8 rounded-2xl overflow-hidden border border-slate-200 shadow-inner relative min-h-[480px]">
+            <!-- Leaflet View (Option A) -->
+            <div id="map-engine-leaflet" class="w-full h-full">
+              <div id="campus-leaflet-map" class="w-full h-[480px] z-10 bg-slate-100"></div>
+            </div>
+            <!-- Google Maps Embed View (Option B) -->
+            <div id="map-engine-google" class="hidden w-full h-full">
+              <iframe id="google-maps-iframe" src="https://maps.google.com/maps?q=Universiti+Utara+Malaysia+Sintok&t=&z=16&ie=UTF8&iwloc=&output=embed" class="w-full h-[480px] rounded-2xl border-0" loading="lazy"></iframe>
+            </div>
+          </div>
+
+          <!-- Right: Campus Stalls Quick-Fly Directory -->
+          <div class="lg:col-span-4 bg-slate-50/70 rounded-2xl p-4 border border-slate-200 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-200">
+                <span class="font-extrabold text-xs text-slate-800 uppercase tracking-wider">Campus Directory</span>
+                <span class="text-[10px] text-slate-400">Click to fly on map</span>
+              </div>
+              <div id="map-sidebar-canteen-list" class="space-y-2 max-h-[400px] overflow-y-auto pr-1">
+                <!-- Dynamically populated via app.js -->
+              </div>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-2 text-center">
+              📍 Sintok Campus Main Latitude & Longitude Verified
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ACTIVE VOUCHERS CATALOG & REDEMPTION RULES -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🎟️</span>
+              <h3 class="font-extrabold text-slate-900 text-base sm:text-lg">My Active Vouchers & Coupons</h3>
+              <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full">
+                Auto-Deducted at Checkout
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">
+              Active discounts currently stored in your wallet. Select "Apply to Pay Now" or choose from the dropdown during QR checkout.
+            </p>
+          </div>
+          <span class="text-xs text-slate-400 font-mono">Synced to Student ID</span>
+        </div>
+
+        <div id="active-vouchers-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Rendered dynamically by app.js renderActiveVouchersList() -->
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- MINI-GAMES & CHALLENGES (Matches media_1792760633452_31d634c5.png) -->
+      <!-- ============================================== -->
+      <div id="games-challenges-section" class="bg-emerald-50/50 rounded-3xl p-6 sm:p-8 border border-emerald-200/80 shadow-xs space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-emerald-100">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🎮</span>
+              <h3 class="font-extrabold text-slate-900 text-base sm:text-lg">Mini-Games & Challenges</h3>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Complete activities to earn bonus points</p>
+          </div>
+          <span class="text-xs font-bold text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">
+            +355 Pts Available Weekly
+          </span>
+        </div>
+
+        <!-- Challenges Cards List (Matches Image 2) -->
+        <div id="challenges-grid-container" class="space-y-3">
+          <!-- Dynamically populated via app.js renderChallenges() -->
+        </div>
+      </div>
+
+      <!-- Rewards & Lucky Wheel Grid -->
+      <div id="rewards-store-section" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Digital Stamp Card & Lucky Wheel -->
+        <div class="lg:col-span-5 space-y-6">
+          
+          <!-- Stamp Card -->
+          <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-slate-900 text-sm">Digital Stamp Card</h3>
+                <p class="text-xs text-slate-400">Earn 1 stamp with each digital payment.</p>
+              </div>
+              <span id="stamp-counter-text" class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+                6 / 10 Stamps
+              </span>
+            </div>
+            
+            <div id="digital-stamp-grid" class="grid grid-cols-5 gap-2">
+              <!-- Rendered via app.js -->
+            </div>
+
+            <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center gap-2">
+              <span>🎁</span>
+              <span>Collect 10 stamps to unlock a <strong>RM 5.00 Meal Voucher</strong>! Stamps reset to 0/10 upon completion.</span>
+            </div>
+          </div>
+
+          <!-- Lucky Spin the Wheel Mini-Game -->
+          <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs text-center space-y-4">
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm">Campus Lucky Spin</h3>
+              <p class="text-xs text-slate-400">Spin the wheel once daily to earn bonus reward points!</p>
+            </div>
+
+            <div class="flex justify-center my-2">
+              <canvas id="lucky-wheel-canvas" width="200" height="200" class="rounded-full shadow-sm border-2 border-slate-100"></canvas>
+            </div>
+
+            <div id="wheel-result-msg" class="hidden text-xs font-bold p-2.5 rounded-xl bg-blue-50 text-blue-900 border border-blue-200">
+              <!-- Message injected on spin -->
+            </div>
+
+            <button onclick="spinLuckyWheel()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
+              Spin Wheel 🎯
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Rewards Catalog Grid -->
+        <div class="lg:col-span-7 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm">Rewards Voucher Store</h3>
+              <p class="text-xs text-slate-400">Redeem vouchers with your earned loyalty points.</p>
+            </div>
+            <div class="text-right">
+              <span class="text-xs text-slate-400">Current Balance:</span>
+              <span class="font-bold text-blue-600 text-sm user-points-val">640 pts</span>
+            </div>
+          </div>
+
+          <div id="rewards-items-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Dynamically populated via app.js -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ============================================== -->
+      <!-- RANKS & CAMPUS-WIDE COLLECTIVE MILESTONE -->
+      <!-- Handbook Direction B: Make it Social -->
+      <!-- ============================================== -->
+      <div id="ranks-leaderboard-section" class="space-y-6">
+        
+        <!-- 1. Campus-Wide Collective Goal Card (Direction B Example) -->
+        <div id="campus-milestone-box">
+          <!-- Rendered dynamically via app.js renderLeaderboard() -->
+        </div>
+
+        <!-- 2. Inter-Faculty Cashless Battle (Direction B Example) -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xl">🏛️</span>
+                <h3 class="font-extrabold text-slate-900 text-base">Inter-Faculty Cashless Battle</h3>
+              </div>
+              <p class="text-xs text-slate-400 mt-0.5">COB vs CAS vs COLGIS competing to reach the shared campus goal.</p>
+            </div>
+            <span class="text-xs font-bold text-blue-700 bg-blue-50 px-3 py-1 rounded-full">
+              Direction B Quest
+            </span>
+          </div>
+
+          <div id="faculty-battle-list" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <!-- Rendered dynamically via app.js renderLeaderboard() -->
+          </div>
+        </div>
+
+        <!-- 3. Top Individual Cashless Champions -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm">Top Student Champions (UUM Sintok)</h3>
+              <p class="text-xs text-slate-400">Students with the highest digital payment volume and trust badges.</p>
+            </div>
+            <span class="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full">
+              🏆 Weekly Individual Ranking
+            </span>
+          </div>
+
+          <div id="leaderboard-individuals-list" class="space-y-2">
+            <!-- Dynamically populated via app.js -->
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ====================================================== -->
+    <!-- TAB 7: FRAUD GUARD & SCAM ACADEMY -->
+    <!-- ====================================================== -->
+    <section id="tab-fraud" class="tab-panel hidden space-y-6">
+      
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-red-600 to-rose-700 text-white rounded-3xl p-6 sm:p-8 shadow-lg shadow-red-500/10 space-y-2">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold">
+          🛡️ TRUST & SAFETY ACADEMY
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Scam Prevention & Fraud Simulator</h2>
+        <p class="text-red-100 text-xs sm:text-sm max-w-2xl leading-relaxed">
+          Learn to recognize counterfeit QR stickers, phishing bursary links, and fake payment receipts through real simulated campus scenarios.
+        </p>
+      </div>
+
+      <!-- Interactive Scenario Simulator Viewport -->
+      <div id="scam-scenario-viewport">
+        <!-- Injected via app.js -->
+      </div>
+
+      <!-- Interactive Scam Quiz -->
+      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+        <div>
+          <h3 class="font-bold text-slate-900 text-sm">"Spot the Fake" Awareness Quiz</h3>
+          <p class="text-xs text-slate-500">Test your fraud identification skills. Score full marks to claim <strong>+20 reward points</strong>!</p>
+        </div>
+        <div id="scam-quiz-viewport">
+          <!-- Injected via app.js -->
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: PRE-PAYMENT SECURITY VERIFICATION -->
+  <!-- ======================================================== -->
+  <div id="security-verify-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-5 animate-scale-up">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">
+            🛡️
+          </div>
+          <div>
+            <h4 class="font-bold text-slate-900 text-sm">Pre-Payment Safety Check</h4>
+            <span class="text-[10px] text-emerald-600 font-semibold">Verified UUM Merchant</span>
+          </div>
+        </div>
+        <button onclick="closeSecurityModal()" class="text-slate-400 hover:text-slate-600 p-1">✕</button>
+      </div>
+
+      <!-- Merchant Details Card -->
+      <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
+        <div class="flex justify-between">
+          <span class="text-slate-500">Stall / Merchant:</span>
+          <strong id="verify-merchant-name" class="text-slate-900 font-bold">Kafe Inasis TNB</strong>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Registered DuitNow ID:</span>
+          <span id="verify-merchant-code" class="font-mono text-slate-700">UUM-D-TNB01</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Trust Score:</span>
+          <span id="verify-trust-score" class="font-bold text-emerald-600">99.8% Verified</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Fraud Flag Check:</span>
+          <span class="font-bold text-emerald-600">Zero Flags / Official Canteen</span>
+        </div>
+      </div>
+
+      <!-- Payment Summary -->
+      <div class="text-center py-2">
+        <span class="text-xs text-slate-400 font-medium">Amount to Pay</span>
+        <div id="verify-amount" class="text-3xl font-black text-slate-900">RM 0.00</div>
+        <div id="verify-voucher-tag" class="hidden text-xs text-emerald-600 font-bold mt-1">
+          Voucher discount applied
+        </div>
+        <div class="text-[11px] text-slate-400 mt-1">
+          Post-payment wallet balance: <span id="verify-new-balance" class="font-bold text-slate-700">RM 0.00</span>
+        </div>
+      </div>
+
+      <!-- Simulation Notice -->
+      <div class="p-2.5 rounded-xl bg-blue-50 border border-blue-100 text-[11px] text-blue-800 text-center">
+        ℹ️ <strong>Simulated Transaction</strong>: No real bank funds will be deducted.
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="grid grid-cols-2 gap-3 pt-2">
+        <button onclick="closeSecurityModal()" class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors">
+          Cancel
+        </button>
+        <button onclick="confirmExecutePayment()" class="py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm shadow-blue-500/25">
+          Confirm & Pay
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: PAYMENT RECEIPT & STATUS -->
+  <!-- ======================================================== -->
+  <div id="payment-receipt-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 text-center space-y-4 animate-scale-up">
+      
+      <div id="receipt-status-icon"></div>
+      <div id="receipt-status-badge"></div>
+      <h3 id="receipt-status-title"></h3>
+
+      <!-- Receipt Data Table -->
+      <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2 text-left">
+        <div class="flex justify-between">
+          <span class="text-slate-400">Reference:</span>
+          <span id="receipt-ref-id" class="font-mono font-bold text-slate-800">TXN-0000</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">Merchant:</span>
+          <span id="receipt-merchant" class="font-bold text-slate-800">Canteen Stall</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">Amount Paid:</span>
+          <span id="receipt-amount" class="font-black text-slate-900">RM 0.00</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">Points Earned:</span>
+          <span id="receipt-points" class="font-bold text-emerald-600">+10 pts</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">Timestamp:</span>
+          <span id="receipt-time" class="text-slate-600">Just now</span>
+        </div>
+        <div class="flex justify-between pt-2 border-t border-slate-200">
+          <span class="text-slate-500 font-semibold">Remaining Wallet:</span>
+          <span id="receipt-remaining-balance" class="font-bold text-blue-600">RM 0.00</span>
+        </div>
+      </div>
+
+      <div class="p-2.5 rounded-xl bg-emerald-50 text-[11px] text-emerald-800 font-semibold">
+        ✓ Automatically recorded into your Spending Analytics & Stamp Card.
+      </div>
+
+      <button onclick="closeReceiptModal()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-colors">
+        Done
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: WHATSAPP 1-CLICK REMINDER (Matches User Image media_1792742779739_e17c4606.png) -->
+  <!-- ======================================================== -->
+  <div id="whatsapp-reminder-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-5 animate-scale-up">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-base">
+            💬
+          </div>
+          <div>
+            <h4 class="font-bold text-slate-900 text-sm">1-Click WhatsApp Debt Reminder</h4>
+            <span class="text-[10px] text-slate-400">Personalized campus repayment notification</span>
+          </div>
+        </div>
+        <button onclick="closeWhatsAppModal()" class="text-slate-400 hover:text-slate-600 p-1">✕</button>
+      </div>
+
+      <!-- Friend Cumulative Summary Card -->
+      <div class="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/80 flex items-center justify-between">
+        <div>
+          <div class="text-[10px] font-bold text-amber-900 uppercase tracking-wider">Friend & Contact</div>
+          <div id="remind-friend-name" class="font-extrabold text-slate-900 text-sm">Sarah Lim</div>
+          <div id="remind-friend-phone" class="text-[11px] text-slate-500 font-medium">+60 12-345 6789</div>
+        </div>
+        <div class="text-right">
+          <span id="remind-bills-count" class="text-[10px] bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded-full inline-block mb-1">
+            2 Unsettled Bills
+          </span>
+          <div id="remind-total-amount" class="text-2xl font-black text-slate-900">RM 20.00</div>
+        </div>
+      </div>
+
+      <!-- Message Textarea Preview -->
+      <div class="space-y-1.5">
+        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">WhatsApp Message Preview</label>
+        <textarea id="remind-message-preview" rows="5" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="space-y-2 pt-1">
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="copyReminderMessage()" class="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5">
+            <span>📋</span>
+            <span>Copy Text</span>
+          </button>
+          <button id="remind-whatsapp-send-btn" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-500/20">
+            <span>📱</span>
+            <span>Open in WhatsApp</span>
+          </button>
+        </div>
+
+        <button id="remind-settle-btn" class="w-full py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition-colors">
+          Mark as Received / Settle Debt ✓
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- FLOATING AI ASSISTANT (PayNow Smart Assistant - Instant Help & Interactive Chat) -->
+  <button id="ai-assistant-toggle" class="fixed bottom-6 right-6 z-40 bg-gradient-to-r from-emerald-600 to-teal-700 text-white px-4 py-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center gap-2.5 group">
+    <div class="relative">
+      <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm">
+        🤖
+      </div>
+      <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full animate-ping"></span>
+      <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full"></span>
+    </div>
+    <div class="text-left hidden sm:block">
+      <div class="text-xs font-black tracking-tight leading-tight">PayNow Assistant</div>
+      <div class="text-[10px] text-emerald-100 font-medium">Click to chat</div>
+    </div>
+  </button>
+
+  <!-- Interactive AI Drawer -->
+  <div id="ai-chat-drawer" class="fixed bottom-24 right-6 w-96 max-w-[calc(100vw-2.5rem)] h-[560px] max-h-[85vh] bg-white rounded-3xl chat-drawer border border-slate-200 z-50 hidden flex-col overflow-hidden animate-scale-up">
+    
+    <!-- Drawer Header -->
+    <div class="p-4 bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center font-bold text-sm">
+          ⚙️
+        </div>
+        <div>
+          <div class="font-extrabold text-sm tracking-tight">PayNow Smart Campus Assistant</div>
+          <span class="text-[10px] text-emerald-100 font-medium">Instant answers to campus dining, split bills, vouchers & safety</span>
+        </div>
+      </div>
+      <button id="ai-chat-close" class="text-white/80 hover:text-white p-1">✕</button>
+    </div>
+
+    <!-- Mode Tabs: FAQs vs Live Chat -->
+    <div class="flex items-center p-1.5 bg-slate-100 border-b border-slate-200 shrink-0">
+      <button id="ai-tab-btn-faq" onclick="switchAIAssistantTab('faq')" class="flex-1 py-1.5 text-xs font-bold bg-white text-blue-600 rounded-lg shadow-xs transition-all">
+        Quick FAQs & Guides
+      </button>
+      <button id="ai-tab-btn-chat" onclick="switchAIAssistantTab('chat')" class="flex-1 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition-all">
+        Live AI Chat
+      </button>
+    </div>
+
+    <!-- VIEW 1: FAQ Accordion Cards -->
+    <div id="ai-faq-view" class="flex-1 min-h-0 p-4 overflow-y-auto space-y-2.5 bg-slate-50/60 chat-drawer-body">
+      <div id="ai-faqs-accordion-list" class="space-y-2.5">
+        <!-- Injected via app.js -->
+      </div>
+    </div>
+
+    <!-- VIEW 2: Conversational Chat Messages -->
+    <div id="ai-chat-view" class="flex-1 min-h-0 hidden flex-col overflow-hidden bg-slate-50/50">
+      <div id="ai-messages-list" class="flex-1 min-h-0 p-4 overflow-y-auto space-y-3 chat-drawer-body">
+        <!-- Injected via app.js -->
+      </div>
+    </div>
+
+    <!-- Audio Voice Recording Banner (When voice recording is active) -->
+    <div id="ai-voice-recording-banner" class="hidden px-3.5 py-2.5 bg-emerald-50 border-t border-b border-emerald-200 flex items-center justify-between text-xs text-emerald-800 shrink-0">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+        <span class="font-bold">Listening... Speak now</span>
+        <div class="flex items-center gap-1 h-3.5 pl-1">
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+        </div>
+      </div>
+      <button type="button" onclick="stopAIVoiceInput()" class="text-[11px] font-extrabold text-red-600 hover:text-red-800 bg-red-50 px-2 py-0.5 rounded-lg border border-red-200 cursor-pointer">
+        Stop ⏹️
+      </button>
+    </div>
+
+    <!-- Message Input Box (Bottom) with Voice Record Button -->
+    <div class="p-3 bg-white border-t border-slate-100 flex items-center gap-2 shrink-0">
+      <button id="ai-voice-record-btn" type="button" onclick="toggleAIVoiceInput()" class="p-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl transition-all cursor-pointer" title="Speak to AI Assistant (Voice Recording)">
+        <span id="ai-mic-icon" class="text-sm">🎙️</span>
+      </button>
+      <input type="text" id="ai-chat-input" placeholder="Type or click 🎙️ to speak..." class="flex-1 px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <button id="ai-chat-send" class="p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-colors cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+      </button>
+    </div>
+
+  </div>
+<!-- ======================================================== -->
+  <!-- FOOTER -->
+  <!-- ======================================================== -->
+  <footer class="bg-white border-t border-slate-200/80 py-6 mt-12 text-center text-xs text-slate-500 space-y-1">
+    <p class="font-bold text-slate-700">UUM PayNow — Campus Cashless Quest & Security Hub</p>
+    <p>Universiti Utara Malaysia (UUM) Sintok, Kedah • Safe Digital Transactions for All Students</p>
+  </footer>
+
+  <!-- Scripts -->
+  <!-- Vendor libraries (Local with CDN fallbacks) -->
+  <script src="vendor/chart.umd.min.js"></script>
+  <script src="vendor/leaflet.js"></script>
+  <script src="vendor/canvas-confetti.js"></script>
+
+  <!-- Application Data & Logic -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: SECURE LOGOUT & RE-LOGIN (SSO) -->
+  <!-- ======================================================== -->
+  <div id="logout-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-5 animate-scale-up text-center">
+      <div class="w-16 h-16 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-3xl ring-4 ring-slate-50">
+        🔒
+      </div>
+      <div>
+        <h3 class="text-xl font-extrabold text-slate-900">Logged Out of PayNow</h3>
+        <p class="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+          Your campus session was safely closed. Your wallet balance, meal vouchers, and debt records are preserved.
+        </p>
+      </div>
+      <div class="p-3 bg-blue-50 rounded-2xl border border-blue-100 text-left space-y-1">
+        <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider block">Single Sign-On (SSO)</span>
+        <p class="text-xs text-slate-700">Quick sign-in using your UUM Student Portal credentials.</p>
+      </div>
+      <div class="space-y-2 pt-1">
+        <button type="button" onclick="performLoginSSO('acc-alex')" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold shadow-md shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer">
+          <span>🔑</span>
+          <span>Sign In as Alex Tan (Student • COB)</span>
+        </button>
+        <button type="button" onclick="performLoginSSO('acc-nurul')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-all cursor-pointer">
+          Sign In as Nurul Izzah (Student • CAS)
+        </button>
+        <button type="button" onclick="performLoginSSO('acc-ali')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-all cursor-pointer">
+          Sign In as Pakcik Ali (Kafe TNB Merchant)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: INVITE FRIENDS / REFERRAL QUEST -->
+  <!-- ======================================================== -->
+  <div id="invite-friends-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-5 animate-scale-up">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">
+            🎁
+          </div>
+          <div>
+            <h4 class="font-bold text-slate-900 text-sm">Invite Coursemates & Earn Points</h4>
+            <span class="text-[10px] text-emerald-600 font-semibold">+80 Points for both of you!</span>
+          </div>
+        </div>
+        <button type="button" onclick="closeInviteModal()" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">✕</button>
+      </div>
+
+      <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-center space-y-2">
+        <span class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">Your Personal Referral Code</span>
+        <div class="text-2xl font-black text-emerald-700 tracking-wider font-mono">UUM-ALEX2984</div>
+        <p class="text-xs text-slate-600">Share with classmates to receive +80 loyalty points when they make their first payment.</p>
+      </div>
+
+      <div class="space-y-2">
+        <button type="button" onclick="copyReferralCode()" class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer">
+          <span>📋</span>
+          <span>Copy Referral Code & Link</span>
+        </button>
+        <button type="button" onclick="shareReferralWhatsApp()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer">
+          <span>💬</span>
+          <span>Share via WhatsApp</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- ======================================================== -->
+  <!-- MODAL: INTERACTIVE 3-STEP DUITNOW GUIDE -->
+  <!-- Handbook Direction D: Make it Approachable -->
+  <!-- ======================================================== -->
+  <div id="duitnow-tutorial-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5 animate-scale-up">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-base">
+            🔰
+          </div>
+          <div>
+            <h4 class="font-black text-slate-900 text-sm sm:text-base">How to Pay with DuitNow QR at UUM</h4>
+            <span class="text-[11px] text-slate-500 font-medium">Direction D • Interactive Beginner's Guide</span>
+          </div>
+        </div>
+        <button onclick="closeDuitNowTutorialModal()" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">✕</button>
+      </div>
+
+      <!-- Step Navigation Tabs -->
+      <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-2xl">
+        <button id="tut-step-pill-1" onclick="setTutorialStep(1)" class="tut-step-tab px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-xs cursor-pointer text-center">
+          1. Scan & Inspect
+        </button>
+        <button id="tut-step-pill-2" onclick="setTutorialStep(2)" class="tut-step-tab px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-500 hover:text-slate-800 cursor-pointer text-center">
+          2. Auto-Voucher
+        </button>
+        <button id="tut-step-pill-3" onclick="setTutorialStep(3)" class="tut-step-tab px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-500 hover:text-slate-800 cursor-pointer text-center">
+          3. Verify & Earn
+        </button>
+      </div>
+
+      <!-- Step Content Area -->
+      <div class="space-y-4">
+        <div>
+          <span id="tut-step-tag" class="text-[10px] font-extrabold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full">
+            Step 1 of 3
+          </span>
+          <h5 id="tut-step-title" class="text-base sm:text-lg font-black text-slate-900 mt-1">Inspect Counter Signage & Scan QR</h5>
+          <p id="tut-step-subtitle" class="text-xs text-slate-500 mt-0.5">Always verify the physical stall name before scanning</p>
+        </div>
+
+        <!-- Interactive Visual Mockup Container -->
+        <div id="tut-step-graphic">
+          <!-- Injected dynamically via renderTutorialStep() -->
+        </div>
+
+        <!-- Bullet Points Checklist -->
+        <ul id="tut-step-bullets" class="space-y-2 pt-1">
+          <!-- Injected dynamically via renderTutorialStep() -->
+        </ul>
+
+        <!-- Security / Pro Tip Box -->
+        <div class="p-3 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5">
+          <span class="text-base shrink-0">💡</span>
+          <span id="tut-step-tip" class="leading-relaxed">Security Checkpoint: Official UUM stands carry a registered Merchant ID and hologram.</span>
+        </div>
+      </div>
+
+      <!-- Modal Footer Action Buttons -->
+      <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+        <button type="button" onclick="prevTutorialStep()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer">
+          ← Previous
+        </button>
+        <button id="tut-step-action-btn" type="button" onclick="nextTutorialStep()" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+          <span>Verify Stall QR ➔</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

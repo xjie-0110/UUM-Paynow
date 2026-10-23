@@ -1,0 +1,161 @@
+/* ======================================================== */
+/* SENIOR MODE ENHANCEMENTS (Accessibility & Large Legibility) */
+/* ======================================================== */
+body.senior-mode {
+  font-size: 18px !important;
+  line-height: 1.6 !important;
+}
+
+body.senior-mode h1 { font-size: 2.25rem !important; }
+body.senior-mode h2 { font-size: 1.85rem !important; }
+body.senior-mode h3 { font-size: 1.5rem !important; }
+body.senior-mode h4, body.senior-mode h5 { font-size: 1.25rem !important; }
+body.senior-mode p, body.senior-mode span, body.senior-mode button, body.senior-mode input, body.senior-mode select {
+  font-size: 1.05rem !important;
+}
+body.senior-mode .text-xs, body.senior-mode .text-\[10px\], body.senior-mode .text-\[11px\] {
+  font-size: 0.95rem !important;
+}
+body.senior-mode button {
+  min-height: 44px !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+  font-weight: 700 !important;
+}
+body.senior-mode input, body.senior-mode select {
+  min-height: 48px !important;
+  font-size: 1.05rem !important;
+}
+
+/* Senior Mode Toggle Pill (Matches media_1792760354629_d05abe31.png) */
+.senior-mode-btn {
+  background-color: #f3e8ff;
+  color: #7e22ce;
+  border: 1.5px solid #d8b4fe;
+  transition: all 0.2s ease;
+}
+.senior-mode-btn:hover {
+  background-color: #ede9fe;
+}
+body.senior-mode .senior-mode-btn {
+  background-color: #7e22ce !important;
+  color: #ffffff !important;
+  border-color: #6b21a8 !important;
+  box-shadow: 0 0 12px rgba(126, 34, 206, 0.4);
+}
+
+/* ======================================================== */
+/* DARK MODE THEME (Matches media_1792760354629_d05abe31.png) */
+/* ======================================================== */
+.dark-mode-btn {
+  background-color: #0f172a;
+  color: #f8fafc;
+  border: 1.5px solid #334155;
+  transition: all 0.2s ease;
+}
+.dark-mode-btn:hover {
+  background-color: #1e293b;
+}
+body.dark .dark-mode-btn {
+  background-color: #fbbf24 !important;
+  color: #0f172a !important;
+  border-color: #f59e0b !important;
+}
+
+body.dark {
+  background-color: #0b0f19 !important;
+  color: #e2e8f0 !important;
+}
+body.dark header {
+  background-color: rgba(15, 23, 42, 0.92) !important;
+  border-color: #1e293b !important;
+}
+body.dark .bg-white {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+body.dark .bg-slate-50 {
+  background-color: #0f172a !important;
+}
+body.dark .bg-slate-100 {
+  background-color: #1e293b !important;
+}
+body.dark .border-slate-200, body.dark .border-slate-100, body.dark .border-slate-200\/80 {
+  border-color: #334155 !important;
+}
+body.dark .text-slate-900, body.dark .text-slate-800, body.dark .text-slate-700 {
+  color: #f8fafc !important;
+}
+body.dark .text-slate-600, body.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+body.dark .text-slate-400 {
+  color: #64748b !important;
+}
+body.dark input, body.dark select {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+body.dark .chat-drawer {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+body.dark footer {
+  background-color: #0f172a !important;
+  border-color: #1e293b !important;
+}
+body.dark .sms-bubble-scam {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* ======================================================== */
+/* RECEIPT SCANNING LASER ANIMATION (Matches Images 3 & 4) */
+/* ======================================================== */
+@keyframes scanLaserMove {
+  0% { top: 8%; opacity: 0.85; }
+  50% { top: 88%; opacity: 1; }
+  100% { top: 8%; opacity: 0.85; }
+}
+
+.scan-laser-beam {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  height: 4px;
+  background: #10b981;
+  box-shadow: 0 0 14px #10b981, 0 0 24px #34d399;
+  border-radius: 9999px;
+  animation: scanLaserMove 1.6s ease-in-out infinite;
+  z-index: 20;
+}
+
+/* ======================================================== */
+/* AUDIO RECORDING WAVEFORM & LISTENING PULSE */
+/* ======================================================== */
+@keyframes waveBarPulse {
+  0%, 100% { height: 6px; }
+  50% { height: 26px; }
+}
+
+.wave-bar {
+  display: inline-block;
+  width: 3.5px;
+  background-color: #10b981;
+  border-radius: 9999px;
+  animation: waveBarPulse 1s ease-in-out infinite;
+}
+.wave-bar:nth-child(1) { animation-delay: 0.0s; }
+.wave-bar:nth-child(2) { animation-delay: 0.15s; }
+.wave-bar:nth-child(3) { animation-delay: 0.3s; }
+.wave-bar:nth-child(4) { animation-delay: 0.45s; }
+.wave-bar:nth-child(5) { animation-delay: 0.2s; }
+.wave-bar:nth-child(6) { animation-delay: 0.35s; }
+
+/* ======================================================== */
+/* PROFILE & ACCOUNTS DROPDOWN */
+/* ======================================================== */
+.profile-dropdown-menu {
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
