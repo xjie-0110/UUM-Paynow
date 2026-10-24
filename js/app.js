@@ -101,6 +101,44 @@
       recognition: null
     },
 
+    // Wallet Top-Up State (Requirement 1: Bank Transfer + TNG eWallet)
+    topup: {
+      selectedAmount: 50,
+      selectedChannel: 'maybank',
+      isProcessing: false
+    },
+
+    // Daily Lucky Wheel Limit State (Requirement 2: 1 spin per day)
+    luckyWheel: {
+      isSpinning: false,
+      lastSpinDate: localStorage.getItem('uum_lucky_spin_date') || null
+    },
+
+    // Payment Security PIN & Biometric State (Requirement 3: PIN / Fingerprint)
+    auth: {
+      currentPin: '',
+      authMode: 'pin', // 'pin' or 'biometric'
+      pendingConfig: null
+    },
+
+    // P2P DuitNow Transfer State (Requirement 4: Transfer to Student / Bank Account)
+    p2p: {
+      payMode: 'merchant', // 'merchant' or 'p2p'
+      transferMethod: 'student', // 'student', 'bank', 'duitnow'
+      selectedFriendId: 'f-1',
+      selectedBank: 'maybank',
+      bankAccNumber: '1142 8932 7701',
+      customStudentId: '297118',
+      resolvedRecipient: {
+        name: "Sarah Lim",
+        identifier: "297118",
+        detail: "College of Business (COB) • Maybank 1142 8932 7701",
+        verified: true
+      },
+      amount: '15.00',
+      note: 'Lunch reimbursement'
+    },
+
     // Voice Pay State
     voice: {
       isListening: false,
@@ -136,6 +174,8 @@
     renderAll();
     initLeafletMap();
     initCharts();
+    if (window.checkDailyWheelStatus) checkDailyWheelStatus();
+    if (window.initP2PRecipient) initP2PRecipient();
   });
 
   function cacheElements() {
@@ -270,6 +310,7 @@
         if (state.map) state.map.invalidateSize();
       }, 150);
       renderActiveVouchersList();
+      if (window.checkDailyWheelStatus) checkDailyWheelStatus();
     } else if (tabId === 'split') {
       renderSplitHub();
     } else if (tabId === 'pay') {
@@ -291,12 +332,15 @@
     renderCumulativeFriendDebts();
     renderStampCard();
     renderActiveVouchersList();
+      if (window.checkDailyWheelStatus) checkDailyWheelStatus();
     renderRewardsCatalog();
     renderChallenges();
     renderLeaderboard();
     renderScamSimulator();
     renderAIFaqs();
     initThemePreferences();
+    checkDailyWheelStatus();
+    initP2PRecipient();
   }
 
   function renderUserStats() {
@@ -823,6 +867,7 @@
     renderTransactionsTable();
     renderStampCard();
     renderActiveVouchersList();
+      if (window.checkDailyWheelStatus) checkDailyWheelStatus();
     openReceiptModal(newTx);
   }
   window.confirmExecutePayment = confirmExecutePayment;
@@ -1777,6 +1822,7 @@
     renderUserStats();
     renderStampCard();
     renderActiveVouchersList();
+      if (window.checkDailyWheelStatus) checkDailyWheelStatus();
   }
   window.simulateAddStamp = simulateAddStamp;
 
@@ -2075,17 +2121,72 @@
   }
   window.resetMapCampusView = resetMapCampusView;
 
+  function checkDailyWheelStatus() {
+    const today = new Date().toISOString().slice(0, 10);
+    const spinBtn = document.getElementById('btn-spin-wheel');
+    const noticeElem = document.getElementById('wheel-limit-notice');
+    const resetBtn = document.getElementById('btn-spin-wheel-reset');
+
+    const lastSpin = state.luckyWheel.lastSpinDate;
+    const hasSpunToday = (lastSpin === today);
+
+    if (spinBtn) {
+      if (hasSpunToday) {
+        spinBtn.disabled = true;
+        spinBtn.className = "w-full py-2.5 bg-slate-200 text-slate-500 rounded-xl text-xs font-bold transition-all cursor-not-allowed";
+        spinBtn.innerHTML = "Already Spun Today (Limit: 1/Day) ✓";
+      } else {
+        spinBtn.disabled = false;
+        spinBtn.className = "w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer";
+        spinBtn.innerHTML = "Spin Wheel 🎯";
+      }
+    }
+
+    if (noticeElem) {
+      if (hasSpunToday) {
+        noticeElem.className = "text-[11px] text-amber-800 bg-amber-50 border border-amber-200 p-2 rounded-xl text-center font-bold block";
+        noticeElem.textContent = "⏰ Daily Limit Reached: 1 free spin per day. Reset at midnight!";
+      } else {
+        noticeElem.className = "text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 p-2 rounded-xl text-center font-bold block";
+        noticeElem.textContent = "🎁 1 Free Daily Spin Available! Spin to earn bonus points.";
+      }
+    }
+  }
+  window.checkDailyWheelStatus = checkDailyWheelStatus;
+
+  function resetDailySpinDemo() {
+    state.luckyWheel.lastSpinDate = null;
+    try { localStorage.removeItem('uum_lucky_spin_date'); } catch (e) {}
+    checkDailyWheelStatus();
+    showToast("↺ Demo Reset: Daily spin unlocked for testing!");
+  }
+  window.resetDailySpinDemo = resetDailySpinDemo;
+
   function spinLuckyWheel() {
+    const today = new Date().toISOString().slice(0, 10);
+    if (state.luckyWheel.lastSpinDate === today) {
+      showToast("⏰ You have already used your 1 free spin today! Come back tomorrow.");
+      return;
+    }
+    if (state.luckyWheel.isSpinning) return;
+
     const wheelCanvas = document.getElementById('lucky-wheel-canvas');
     const resultBox = document.getElementById('wheel-result-msg');
+    const spinBtn = document.getElementById('btn-spin-wheel');
     if (!wheelCanvas) return;
+
+    state.luckyWheel.isSpinning = true;
+    if (spinBtn) {
+      spinBtn.disabled = true;
+      spinBtn.textContent = "Spinning Wheel...";
+    }
 
     const prizes = [5, 10, 20, 50, 15, 25];
     const prizeWon = prizes[Math.floor(Math.random() * prizes.length)];
 
     let rotation = 0;
     const totalSpin = 1440 + Math.random() * 360;
-    const duration = 2000;
+    const duration = 2200;
     const start = performance.now();
 
     function animate(time) {
@@ -2121,13 +2222,21 @@
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
+        state.luckyWheel.isSpinning = false;
+        state.luckyWheel.lastSpinDate = today;
+        try { localStorage.setItem('uum_lucky_spin_date', today); } catch (e) {}
+
         state.user.points += prizeWon;
         renderUserStats();
+
         if (resultBox) {
           resultBox.innerHTML = `🎉 Congratulations! You won <strong class="text-blue-600">+${prizeWon} Points</strong>!`;
           resultBox.classList.remove('hidden');
         }
         if (window.confetti) window.confetti({ particleCount: 60, spread: 60 });
+        showToast(`🎉 Daily Spin Complete! Won +${prizeWon} Points.`);
+
+        checkDailyWheelStatus();
       }
     }
     requestAnimationFrame(animate);
@@ -2193,6 +2302,7 @@
     renderUserStats();
     renderRewardsCatalog();
     renderActiveVouchersList();
+      if (window.checkDailyWheelStatus) checkDailyWheelStatus();
     showToast(`Redeemed ${r.name}! Added to your active vouchers.`);
     if (window.confetti) window.confetti({ particleCount: 50, spread: 60 });
   }
@@ -3421,5 +3531,616 @@
       }
     }
   }
+
+
+  // ==========================================
+  // WALLET TOP-UP LOGIC (FPX Bank Transfer & TNG)
+  // Requirement 1
+  // ==========================================
+  function openTopUpModal(presetAmount) {
+    const modal = document.getElementById('wallet-topup-modal');
+    if (!modal) return;
+
+    if (presetAmount) {
+      state.topup.selectedAmount = presetAmount;
+    }
+    const amtInput = document.getElementById('topup-custom-amount');
+    if (amtInput) amtInput.value = state.topup.selectedAmount;
+
+    updateTopUpSummary();
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+  window.openTopUpModal = openTopUpModal;
+
+  function closeTopUpModal() {
+    const modal = document.getElementById('wallet-topup-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  }
+  window.closeTopUpModal = closeTopUpModal;
+
+  function selectTopUpAmount(amt) {
+    state.topup.selectedAmount = amt;
+    const amtInput = document.getElementById('topup-custom-amount');
+    if (amtInput) amtInput.value = amt;
+
+    document.querySelectorAll('.topup-amt-chip').forEach(btn => {
+      if (parseFloat(btn.getAttribute('data-amt')) === amt) {
+        btn.className = "topup-amt-chip px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs cursor-pointer";
+      } else {
+        btn.className = "topup-amt-chip px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer";
+      }
+    });
+
+    updateTopUpSummary();
+  }
+  window.selectTopUpAmount = selectTopUpAmount;
+
+  function onTopUpCustomAmountChanged(val) {
+    const amt = parseFloat(val) || 0;
+    state.topup.selectedAmount = amt;
+    document.querySelectorAll('.topup-amt-chip').forEach(btn => {
+      if (parseFloat(btn.getAttribute('data-amt')) === amt) {
+        btn.className = "topup-amt-chip px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs cursor-pointer";
+      } else {
+        btn.className = "topup-amt-chip px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer";
+      }
+    });
+    updateTopUpSummary();
+  }
+  window.onTopUpCustomAmountChanged = onTopUpCustomAmountChanged;
+
+  function selectTopUpChannel(channelId) {
+    state.topup.selectedChannel = channelId;
+    document.querySelectorAll('.topup-channel-card').forEach(card => {
+      if (card.getAttribute('data-channel') === channelId) {
+        card.className = "topup-channel-card p-3 rounded-2xl border-2 border-blue-600 bg-blue-50/70 shadow-2xs flex items-center justify-between cursor-pointer transition-all";
+      } else {
+        card.className = "topup-channel-card p-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 shadow-2xs flex items-center justify-between cursor-pointer transition-all";
+      }
+    });
+    updateTopUpSummary();
+  }
+  window.selectTopUpChannel = selectTopUpChannel;
+
+  function updateTopUpSummary() {
+    const amt = parseFloat(state.topup.selectedAmount) || 0;
+    const projected = state.user.walletBalance + amt;
+
+    const currElem = document.getElementById('topup-current-bal-display');
+    const amtElem = document.getElementById('topup-amount-display');
+    const newBalElem = document.getElementById('topup-new-bal-display');
+    const btnElem = document.getElementById('btn-execute-topup');
+
+    if (currElem) currElem.textContent = `RM ${state.user.walletBalance.toFixed(2)}`;
+    if (amtElem) amtElem.textContent = `RM ${amt.toFixed(2)}`;
+    if (newBalElem) newBalElem.textContent = `RM ${projected.toFixed(2)}`;
+    if (btnElem) {
+      const chName = state.topup.selectedChannel === 'tng' ? 'Touch \'n Go eWallet' : 'FPX Online Banking';
+      btnElem.innerHTML = `<span>Proceed to Top Up RM ${amt.toFixed(2)} (${chName}) ➔</span>`;
+    }
+  }
+
+  function executeWalletTopUp() {
+    const amt = parseFloat(state.topup.selectedAmount) || 0;
+    if (amt < 5) {
+      showToast("Minimum top-up amount is RM 5.00");
+      return;
+    }
+
+    const btn = document.getElementById('btn-execute-topup');
+    const chName = state.topup.selectedChannel === 'tng' ? 'Touch \'n Go eWallet' : 'Maybank2u / FPX';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span>Connecting to ${chName}...</span>`;
+    }
+
+    setTimeout(() => {
+      state.user.walletBalance += amt;
+
+      const txId = `TXN-TOPUP-${Date.now().toString().slice(-6)}`;
+      state.transactions.unshift({
+        id: txId,
+        title: `Top Up via ${chName}`,
+        category: "Top Up",
+        amount: amt,
+        type: "credit",
+        status: "success",
+        timestamp: "Just now",
+        notes: `Simulated ${chName} Top-Up`,
+        pointsEarned: 0
+      });
+
+      renderUserStats();
+      renderTransactionsTable();
+      closeTopUpModal();
+
+      if (btn) btn.disabled = false;
+      if (window.confetti) window.confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+      showToast(`✓ Top-up Successful: +RM ${amt.toFixed(2)} credited via ${chName}!`);
+    }, 1100);
+  }
+  window.executeWalletTopUp = executeWalletTopUp;
+
+  // ==========================================
+  // PAYMENT SECURITY: 6-DIGIT PIN & BIOMETRIC
+  // Requirement 3
+  // ==========================================
+  function openPaymentAuthModal(config) {
+    state.auth.pendingConfig = config;
+    state.auth.currentPin = '';
+    state.auth.authMode = 'pin';
+
+    const modal = document.getElementById('payment-auth-modal');
+    if (!modal) return;
+
+    const amtElem = document.getElementById('auth-modal-amount');
+    const recName = document.getElementById('auth-modal-recipient-name');
+    const recDetail = document.getElementById('auth-modal-recipient-detail');
+    const hintElem = document.getElementById('auth-pin-hint');
+    const statusText = document.getElementById('biometric-status-text');
+    const sensor = document.getElementById('biometric-sensor-icon');
+
+    if (amtElem) amtElem.textContent = `RM ${(config.amount || 0).toFixed(2)}`;
+    if (recName) recName.textContent = config.recipientName || 'Authorized Recipient';
+    if (recDetail) recDetail.textContent = config.recipientDetail || 'Verified Recipient';
+
+    if (hintElem) hintElem.innerHTML = '<span class="text-slate-400 font-normal">(Demo PIN: <strong>123456</strong>)</span>';
+    if (statusText) statusText.textContent = "Tap scanner to verify fingerprint";
+    if (sensor) sensor.classList.remove('biometric-sensor-active');
+
+    updatePinDots();
+    switchAuthMode('pin');
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+  window.openPaymentAuthModal = openPaymentAuthModal;
+
+  function closePaymentAuthModal() {
+    const modal = document.getElementById('payment-auth-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+    state.auth.currentPin = '';
+    // Note: pendingConfig is cleared in executeApprovedPayment or on explicit cancel
+  }
+  window.closePaymentAuthModal = closePaymentAuthModal;
+
+  function cancelPaymentAuth() {
+    state.auth.pendingConfig = null;
+    closePaymentAuthModal();
+    showToast("Authorization cancelled");
+  }
+  window.cancelPaymentAuth = cancelPaymentAuth;
+
+  function switchAuthMode(mode) {
+    state.auth.authMode = mode;
+    const pinView = document.getElementById('auth-pin-view');
+    const bioView = document.getElementById('auth-biometric-view');
+    const tabPin = document.getElementById('btn-auth-tab-pin');
+    const tabBio = document.getElementById('btn-auth-tab-bio');
+
+    if (mode === 'pin') {
+      if (pinView) pinView.classList.remove('hidden');
+      if (bioView) bioView.classList.add('hidden');
+      if (tabPin) tabPin.className = "flex-1 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-xs cursor-pointer";
+      if (tabBio) tabBio.className = "flex-1 py-2 text-xs font-bold rounded-xl text-slate-600 hover:text-slate-900 cursor-pointer";
+    } else {
+      if (pinView) pinView.classList.add('hidden');
+      if (bioView) bioView.classList.remove('hidden');
+      if (tabPin) tabPin.className = "flex-1 py-2 text-xs font-bold rounded-xl text-slate-600 hover:text-slate-900 cursor-pointer";
+      if (tabBio) tabBio.className = "flex-1 py-2 text-xs font-bold rounded-xl bg-emerald-600 text-white shadow-xs cursor-pointer";
+    }
+  }
+  window.switchAuthMode = switchAuthMode;
+
+  function updatePinDots() {
+    const len = state.auth.currentPin.length;
+    for (let i = 1; i <= 6; i++) {
+      const dot = document.getElementById(`pin-dot-${i}`);
+      if (dot) {
+        dot.classList.remove('success');
+        if (i <= len) {
+          dot.classList.add('filled');
+        } else {
+          dot.classList.remove('filled');
+        }
+      }
+    }
+    const dotsBox = document.getElementById('pin-dots-container');
+    if (dotsBox && len === 0) {
+      dotsBox.classList.remove('text-emerald-600', 'scale-105');
+    }
+  }
+
+  function enterPinDigit(digit) {
+    if (state.auth.currentPin.length >= 6) return;
+    state.auth.currentPin += digit.toString();
+    updatePinDots();
+
+    if (state.auth.currentPin.length === 6) {
+      verifyPinAndExecute();
+    }
+  }
+  window.enterPinDigit = enterPinDigit;
+
+  function backspacePin() {
+    if (state.auth.currentPin.length > 0) {
+      state.auth.currentPin = state.auth.currentPin.slice(0, -1);
+      updatePinDots();
+    }
+  }
+  window.backspacePin = backspacePin;
+
+  function clearPin() {
+    state.auth.currentPin = '';
+    updatePinDots();
+  }
+  window.clearPin = clearPin;
+
+  function verifyPinAndExecute() {
+    const entered = state.auth.currentPin;
+    const correctPin = (window.UUM_DATA.security && window.UUM_DATA.security.defaultPin) || '123456';
+
+    if (entered === correctPin) {
+      // Glow all dots emerald green on successful PIN verification
+      for (let i = 1; i <= 6; i++) {
+        const dot = document.getElementById(`pin-dot-${i}`);
+        if (dot) dot.classList.add('success');
+      }
+
+      const hintElem = document.getElementById('auth-pin-hint');
+      if (hintElem) {
+        hintElem.innerHTML = '<span class="text-emerald-600 font-bold flex items-center justify-center gap-1">✓ PIN Verified! Authorizing Transfer...</span>';
+      }
+
+      // Smooth transition to execute payment and reveal success screen
+      setTimeout(() => {
+        executeApprovedPayment();
+      }, 350);
+    } else {
+      // Error feedback
+      const dotsBox = document.getElementById('pin-dots-container');
+      if (dotsBox) {
+        dotsBox.classList.add('shake-anim');
+        setTimeout(() => dotsBox.classList.remove('shake-anim'), 400);
+      }
+      showToast("❌ Incorrect PIN. Enter demo PIN: 123456");
+      clearPin();
+    }
+  }
+
+  function authenticateBiometric() {
+    const sensor = document.getElementById('biometric-sensor-icon');
+    const statusText = document.getElementById('biometric-status-text');
+
+    if (sensor) sensor.classList.add('biometric-sensor-active');
+    if (statusText) statusText.textContent = "Scanning fingerprint biometric...";
+
+    setTimeout(() => {
+      if (statusText) {
+        statusText.innerHTML = '<span class="text-emerald-600 font-bold flex items-center justify-center gap-1">✓ Biometric Verified: Alex Tan (298412)</span>';
+      }
+      setTimeout(() => {
+        if (sensor) sensor.classList.remove('biometric-sensor-active');
+        executeApprovedPayment();
+      }, 350);
+    }, 600);
+  }
+  window.authenticateBiometric = authenticateBiometric;
+
+  function executeApprovedPayment() {
+    const config = state.auth.pendingConfig;
+    closePaymentAuthModal();
+    state.auth.pendingConfig = null;
+
+    if (config && typeof config.onApproved === 'function') {
+      config.onApproved();
+    }
+  }
+
+  function requestPaymentAuthFromSecurityModal() {
+    closeSecurityModal();
+    const rawAmt = parseFloat(state.payment.customAmount) || 0;
+    let discount = 0;
+    if (state.payment.selectedVoucherId) {
+      const v = state.activeVouchers.find(item => item.id === state.payment.selectedVoucherId);
+      if (v) discount = v.discountType === 'fixed' ? Math.min(v.discountValue, rawAmt) : (rawAmt * v.discountValue) / 100;
+    }
+    const finalAmt = Math.max(0, rawAmt - discount);
+    const canteen = state.canteens.find(c => c.id === state.payment.canteenId) || state.canteens[0];
+
+    openPaymentAuthModal({
+      type: 'merchant',
+      amount: finalAmt,
+      recipientName: canteen.name,
+      recipientDetail: `${canteen.merchantCode} • Verified Campus Canteen`,
+      onApproved: () => {
+        confirmExecutePayment();
+      }
+    });
+  }
+  window.requestPaymentAuthFromSecurityModal = requestPaymentAuthFromSecurityModal;
+
+  // ==========================================
+  // P2P DUITNOW TRANSFERS TO STUDENTS / ACCOUNTS
+  // Requirement 4
+  // ==========================================
+  function switchPayMode(mode) {
+    state.p2p.payMode = mode;
+    const merchantView = document.getElementById('pay-merchant-view');
+    const p2pView = document.getElementById('pay-p2p-view');
+    const btnMerchant = document.getElementById('pay-mode-btn-merchant');
+    const btnP2P = document.getElementById('pay-mode-btn-p2p');
+
+    if (mode === 'merchant') {
+      if (merchantView) merchantView.classList.remove('hidden');
+      if (p2pView) p2pView.classList.add('hidden');
+      if (btnMerchant) btnMerchant.className = "flex-1 py-2.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-xs cursor-pointer";
+      if (btnP2P) btnP2P.className = "flex-1 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 cursor-pointer";
+    } else {
+      if (merchantView) merchantView.classList.add('hidden');
+      if (p2pView) p2pView.classList.remove('hidden');
+      if (btnMerchant) btnMerchant.className = "flex-1 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 cursor-pointer";
+      if (btnP2P) btnP2P.className = "flex-1 py-2.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-xs cursor-pointer";
+      initP2PRecipient();
+    }
+  }
+  window.switchPayMode = switchPayMode;
+
+  function initP2PRecipient() {
+    selectP2PFriend('f-1');
+  }
+
+  function selectP2PFriend(friendId) {
+    state.p2p.selectedFriendId = friendId;
+    const friend = state.savedFriends.find(f => f.id === friendId) || state.savedFriends[0];
+
+    state.p2p.resolvedRecipient = {
+      name: friend.name,
+      identifier: friend.studentId,
+      detail: `${friend.faculty} • ${friend.bankName || 'Maybank'} ${friend.accountNo || '1142 8932 7701'}`,
+      bankName: friend.bankName || 'Maybank',
+      accountNo: friend.accountNo || '1142 8932 7701',
+      avatarInitial: friend.avatarInitial || 'SL'
+    };
+
+    document.querySelectorAll('.p2p-friend-chip').forEach(chip => {
+      if (chip.getAttribute('data-friend-id') === friendId) {
+        chip.className = "p2p-friend-chip px-3 py-2 rounded-2xl border-2 border-blue-600 bg-blue-50/80 text-xs font-bold flex items-center gap-2 cursor-pointer";
+      } else {
+        chip.className = "p2p-friend-chip px-3 py-2 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold flex items-center gap-2 cursor-pointer";
+      }
+    });
+
+    renderP2PResolvedCard();
+  }
+  window.selectP2PFriend = selectP2PFriend;
+
+  function setP2PTransferMethod(method) {
+    state.p2p.transferMethod = method;
+    const studentBox = document.getElementById('p2p-method-student-box');
+    const bankBox = document.getElementById('p2p-method-bank-box');
+    const duitnowBox = document.getElementById('p2p-method-duitnow-box');
+
+    const tabStudent = document.getElementById('btn-p2p-tab-student');
+    const tabBank = document.getElementById('btn-p2p-tab-bank');
+    const tabDuitNow = document.getElementById('btn-p2p-tab-duitnow');
+
+    if (method === 'student') {
+      if (studentBox) studentBox.classList.remove('hidden');
+      if (bankBox) bankBox.classList.add('hidden');
+      if (duitnowBox) duitnowBox.classList.add('hidden');
+      if (tabStudent) tabStudent.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-xs cursor-pointer";
+      if (tabBank) tabBank.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:text-slate-900 cursor-pointer";
+      if (tabDuitNow) tabDuitNow.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:text-slate-900 cursor-pointer";
+    } else if (method === 'bank') {
+      if (studentBox) studentBox.classList.add('hidden');
+      if (bankBox) bankBox.classList.remove('hidden');
+      if (duitnowBox) duitnowBox.classList.add('hidden');
+      if (tabStudent) tabStudent.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:text-slate-900 cursor-pointer";
+      if (tabBank) tabBank.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-xs cursor-pointer";
+      if (tabDuitNow) tabDuitNow.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:text-slate-900 cursor-pointer";
+    } else {
+      if (studentBox) studentBox.classList.add('hidden');
+      if (bankBox) bankBox.classList.add('hidden');
+      if (duitnowBox) duitnowBox.classList.remove('hidden');
+      if (tabStudent) tabStudent.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:text-slate-900 cursor-pointer";
+      if (tabBank) tabBank.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:text-slate-900 cursor-pointer";
+      if (tabDuitNow) tabDuitNow.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-xs cursor-pointer";
+    }
+  }
+  window.setP2PTransferMethod = setP2PTransferMethod;
+
+  function renderP2PResolvedCard() {
+    const card = document.getElementById('p2p-resolved-card');
+    if (!card || !state.p2p.resolvedRecipient) return;
+
+    const r = state.p2p.resolvedRecipient;
+    card.innerHTML = `
+      <div class="p-3.5 bg-emerald-50/80 rounded-2xl border border-emerald-200 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold text-sm flex items-center justify-center">
+            ${r.avatarInitial || 'U'}
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <h5 class="text-xs font-black text-slate-900">${r.name}</h5>
+              <span class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                Verified DuitNow ✓
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-600 mt-0.5">${r.detail}</p>
+          </div>
+        </div>
+        <span class="text-[10px] text-slate-400 font-mono">Instant P2P</span>
+      </div>
+    `;
+  }
+
+  function selectP2PQuickAmount(amt) {
+    state.p2p.amount = amt.toString();
+    const input = document.getElementById('p2p-amount-input');
+    if (input) input.value = amt.toFixed(2);
+  }
+  window.selectP2PQuickAmount = selectP2PQuickAmount;
+
+  function onP2PAmountInputChanged(val) {
+    state.p2p.amount = val;
+  }
+  window.onP2PAmountInputChanged = onP2PAmountInputChanged;
+
+  function onP2PNoteInputChanged(val) {
+    state.p2p.note = val;
+  }
+  window.onP2PNoteInputChanged = onP2PNoteInputChanged;
+
+  function requestP2PTransferAuth() {
+    const amt = parseFloat(state.p2p.amount);
+    if (isNaN(amt) || amt <= 0) {
+      showToast("Please enter a valid transfer amount greater than RM 0.00");
+      return;
+    }
+    if (amt > state.user.walletBalance) {
+      showToast(`Insufficient balance! Current wallet balance is RM ${state.user.walletBalance.toFixed(2)}`);
+      return;
+    }
+
+    const r = state.p2p.resolvedRecipient;
+    if (!r) {
+      showToast("Please select a valid recipient");
+      return;
+    }
+
+    openPaymentAuthModal({
+      type: 'p2p',
+      amount: amt,
+      recipientName: r.name,
+      recipientDetail: `${r.detail} • DuitNow P2P`,
+      onApproved: () => {
+        confirmExecuteP2PTransfer();
+      }
+    });
+  }
+  window.requestP2PTransferAuth = requestP2PTransferAuth;
+
+  function confirmExecuteP2PTransfer() {
+    const amt = parseFloat(state.p2p.amount);
+    const r = state.p2p.resolvedRecipient;
+
+    state.user.walletBalance -= amt;
+    state.user.monthSpent += amt;
+
+    const txId = `DUITNOW-P2P-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    state.transactions.unshift({
+      id: txId,
+      title: `Transfer to ${r.name}`,
+      category: "Transfer",
+      amount: amt,
+      type: "debit",
+      status: "success",
+      timestamp: "Just now",
+      notes: state.p2p.note || "DuitNow P2P Transfer",
+      pointsEarned: 5
+    });
+
+    renderUserStats();
+    renderTransactionsTable();
+
+    // Show P2P Receipt Modal
+    const modal = document.getElementById('p2p-receipt-modal');
+    if (modal) {
+      document.getElementById('p2p-receipt-amount').textContent = `RM ${amt.toFixed(2)}`;
+      document.getElementById('p2p-receipt-recipient').textContent = r.name;
+      document.getElementById('p2p-receipt-account').textContent = r.detail;
+      document.getElementById('p2p-receipt-reference').textContent = state.p2p.note || 'DuitNow P2P Transfer';
+      document.getElementById('p2p-receipt-id').textContent = txId;
+      document.getElementById('p2p-receipt-date').textContent = new Date().toLocaleString();
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    if (window.confetti) window.confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+    showToast(`✓ Transferred RM ${amt.toFixed(2)} to ${r.name} successfully!`);
+  }
+  window.confirmExecuteP2PTransfer = confirmExecuteP2PTransfer;
+
+  function closeP2PReceiptModal() {
+    const modal = document.getElementById('p2p-receipt-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  }
+  window.closeP2PReceiptModal = closeP2PReceiptModal;
+
+  function shareP2PReceiptWhatsApp() {
+    const amt = parseFloat(state.p2p.amount) || 0;
+    const r = state.p2p.resolvedRecipient;
+    const note = state.p2p.note || 'DuitNow Transfer';
+    const msg = encodeURIComponent(`Hi ${r.name}! I have transferred RM ${amt.toFixed(2)} to you via UUM PayNow DuitNow (${note}). Ref: ${document.getElementById('p2p-receipt-id').textContent}`);
+    window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+  }
+  window.shareP2PReceiptWhatsApp = shareP2PReceiptWhatsApp;
+
+
+  function onP2PCustomStudentInput(val) {
+    state.p2p.customStudentId = val;
+    const match = state.savedFriends.find(f => f.studentId === val.trim());
+    if (match) {
+      selectP2PFriend(match.id);
+    } else if (val.trim().length >= 4) {
+      state.p2p.resolvedRecipient = {
+        name: `UUM Student (${val.trim()})`,
+        identifier: val.trim(),
+        detail: `UUM Sintok Student • DuitNow ID ${val.trim()}`,
+        bankName: 'Maybank',
+        accountNo: '1142 8932 7701',
+        avatarInitial: 'ST'
+      };
+      renderP2PResolvedCard();
+    }
+  }
+  window.onP2PCustomStudentInput = onP2PCustomStudentInput;
+
+  function onP2PBankAccInput(val) {
+    state.p2p.bankAccNumber = val;
+    const bankSelect = document.getElementById('p2p-bank-select');
+    const bankName = bankSelect ? bankSelect.value : 'Maybank';
+    if (val.trim().length >= 5) {
+      state.p2p.resolvedRecipient = {
+        name: `Account Holder (${bankName})`,
+        identifier: val.trim(),
+        detail: `${bankName} • Acc: ${val.trim()}`,
+        bankName: bankName,
+        accountNo: val.trim(),
+        avatarInitial: bankName.slice(0, 2).toUpperCase()
+      };
+      renderP2PResolvedCard();
+    }
+  }
+  window.onP2PBankAccInput = onP2PBankAccInput;
+
+  function onP2PDuitNowInput(val) {
+    if (val.trim().length >= 8) {
+      state.p2p.resolvedRecipient = {
+        name: `DuitNow Verified Contact`,
+        identifier: val.trim(),
+        detail: `DuitNow ID: ${val.trim()} • National Payment Switch`,
+        bankName: 'DuitNow',
+        accountNo: val.trim(),
+        avatarInitial: 'DN'
+      };
+      renderP2PResolvedCard();
+    }
+  }
+  window.onP2PDuitNowInput = onP2PDuitNowInput;
 
 })();

@@ -144,7 +144,7 @@ window.UUM_DATA = {
     earnedPoints: 160
   },
 
-  // Saved Campus Friends for Bill Splitting
+  // Saved Campus Friends for Bill Splitting & P2P DuitNow Transfers
   savedFriends: [
     {
       id: "f-1",
@@ -152,6 +152,9 @@ window.UUM_DATA = {
       studentId: "297118",
       phone: "+60 12-345 6789",
       faculty: "College of Business (COB)",
+      bankName: "Maybank",
+      accountNo: "1142 8932 7701",
+      duitNowId: "+60123456789",
       avatarInitial: "SL",
       avatarBg: "bg-pink-500"
     },
@@ -161,6 +164,9 @@ window.UUM_DATA = {
       studentId: "295402",
       phone: "+60 17-889 1234",
       faculty: "College of Arts & Sciences (CAS)",
+      bankName: "Bank Islam",
+      accountNo: "0201 1200 4892",
+      duitNowId: "+60178891234",
       avatarInitial: "AH",
       avatarBg: "bg-blue-500"
     },
@@ -170,6 +176,9 @@ window.UUM_DATA = {
       studentId: "298011",
       phone: "+60 11-234 5678",
       faculty: "COLGIS Law & Gov",
+      bankName: "CIMB Bank",
+      accountNo: "7058 9123 4450",
+      duitNowId: "+60112345678",
       avatarInitial: "DW",
       avatarBg: "bg-emerald-500"
     },
@@ -179,10 +188,29 @@ window.UUM_DATA = {
       studentId: "296334",
       phone: "+60 19-876 5432",
       faculty: "College of Arts & Sciences (CAS)",
+      bankName: "Touch 'n Go eWallet",
+      accountNo: "TNG-60198765432",
+      duitNowId: "+60198765432",
       avatarInitial: "SN",
       avatarBg: "bg-purple-500"
     }
   ],
+
+  // Supported Banks & Channels for Top-Up and P2P Transfers
+  banks: [
+    { id: "maybank", name: "Maybank2u", code: "MBB", color: "bg-amber-400 text-slate-900", icon: "🦁" },
+    { id: "cimb", name: "CIMB Clicks", code: "CIMB", color: "bg-red-600 text-white", icon: "🔴" },
+    { id: "bankislam", name: "Bank Islam", code: "BIMB", color: "bg-red-800 text-white", icon: "🌙" },
+    { id: "rhb", name: "RHB Now", code: "RHB", color: "bg-blue-600 text-white", icon: "🔵" },
+    { id: "publicbank", name: "Public Bank", code: "PBB", color: "bg-red-700 text-white", icon: "⭐" },
+    { id: "tng", name: "Touch 'n Go eWallet", code: "TNG", color: "bg-blue-500 text-white", icon: "📱" }
+  ],
+
+  // Security Configuration (PIN & Biometric Fingerprint)
+  security: {
+    defaultPin: "123456",
+    biometricSupported: true
+  },
 
   // Active User Vouchers with explicit deduction rules and applicable stalls
   activeVouchers: [

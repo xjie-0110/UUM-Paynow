@@ -362,3 +362,87 @@ body.dark .sms-bubble-scam {
 .profile-dropdown-menu {
   box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
 }
+
+
+/* ======================================================== */
+/* PIN KEYPAD & BIOMETRIC FINGERPRINT STYLES */
+/* ======================================================== */
+.pin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  border: 2px solid #cbd5e1;
+  background-color: transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.pin-dot.filled {
+  background-color: #0d5be1;
+  border-color: #0d5be1;
+  transform: scale(1.15);
+  box-shadow: 0 0 10px rgba(13, 91, 225, 0.4);
+}
+body.dark .pin-dot {
+  border-color: #475569;
+}
+body.dark .pin-dot.filled {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.keypad-btn {
+  height: 52px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  border-radius: 1rem;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.keypad-btn:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+}
+.keypad-btn:active {
+  transform: scale(0.94);
+  background-color: #e2e8f0;
+}
+body.dark .keypad-btn {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+body.dark .keypad-btn:hover {
+  background-color: #334155;
+}
+
+@keyframes fingerprintPulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+  50% { transform: scale(1.05); box-shadow: 0 0 0 16px rgba(16, 185, 129, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.biometric-sensor-active {
+  animation: fingerprintPulse 1.8s infinite ease-in-out;
+}
+
+@keyframes shakeError {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+.shake-anim {
+  animation: shakeError 0.4s ease-in-out;
+}
+
+.pin-dot.success {
+  background-color: #10b981 !important;
+  border-color: #10b981 !important;
+  transform: scale(1.25) !important;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.6) !important;
+}

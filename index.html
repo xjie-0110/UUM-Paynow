@@ -252,7 +252,7 @@
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                   Simulated Wallet Balance
                 </span>
-                <button id="wallet-topup-btn" class="hover:underline flex items-center gap-1 text-[11px] bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md transition-colors">
+                <button id="wallet-topup-btn" onclick="openTopUpModal()" class="hover:underline flex items-center gap-1 text-[11px] bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded-md transition-colors cursor-pointer font-bold shadow-2xs">
                   <span>+ Top Up</span>
                 </button>
               </div>
@@ -520,7 +520,21 @@
           </span>
         </div>
 
-        <!-- Voice Pay Simulation Banner -->
+        <!-- Dual Mode Switcher: Campus Merchant vs Student P2P Transfer -->
+        <div class="bg-slate-100 p-1.5 rounded-2xl flex items-center gap-1.5 border border-slate-200">
+          <button type="button" id="pay-mode-btn-merchant" onclick="switchPayMode('merchant')" class="flex-1 py-2.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-xs cursor-pointer flex items-center justify-center gap-2 transition-all">
+            <span>🏪</span>
+            <span>Pay Campus Merchant / Canteen</span>
+          </button>
+          <button type="button" id="pay-mode-btn-p2p" onclick="switchPayMode('p2p')" class="flex-1 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 cursor-pointer flex items-center justify-center gap-2 transition-all">
+            <span>👤</span>
+            <span>Transfer to Student / Bank (DuitNow)</span>
+          </button>
+        </div>
+
+        <!-- Campus Merchant Payment View -->
+        <div id="pay-merchant-view" class="space-y-6">
+<!-- Voice Pay Simulation Banner -->
         <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0">
@@ -652,7 +666,180 @@
 
         </div>
 
-      </div>
+      
+        </div>
+
+        <!-- Student & Bank P2P DuitNow Transfer View (Requirement 4) -->
+        <div id="pay-p2p-view" class="hidden space-y-6">
+          <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 text-xl">
+                👥
+              </div>
+              <div>
+                <span class="font-bold text-xs uppercase tracking-wider text-emerald-200">Campus Peer-to-Peer Transfer</span>
+                <p class="text-xs font-medium text-white">Send money instantly to fellow UUM students or private bank accounts via DuitNow.</p>
+              </div>
+            </div>
+            <span class="px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-bold rounded-full shrink-0">
+              Zero Transfer Fee
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Left Column: Recipient & Method -->
+            <div class="lg:col-span-7 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-5">
+              
+              <!-- Transfer Method Tabs -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Transfer Destination Type</label>
+                <div class="flex items-center gap-2 p-1 bg-slate-100 rounded-2xl">
+                  <button type="button" id="btn-p2p-tab-student" onclick="setP2PTransferMethod('student')" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-xs cursor-pointer flex-1 text-center transition-all">
+                    🎓 Student ID (Matric)
+                  </button>
+                  <button type="button" id="btn-p2p-tab-bank" onclick="setP2PTransferMethod('bank')" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:text-slate-900 cursor-pointer flex-1 text-center transition-all">
+                    🏦 Bank Account
+                  </button>
+                  <button type="button" id="btn-p2p-tab-duitnow" onclick="setP2PTransferMethod('duitnow')" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:text-slate-900 cursor-pointer flex-1 text-center transition-all">
+                    📱 Phone / DuitNow ID
+                  </button>
+                </div>
+              </div>
+
+              <!-- Student ID Method Box -->
+              <div id="p2p-method-student-box" class="space-y-3">
+                <label class="block text-xs font-bold text-slate-600">Quick Frequent Student Contacts</label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div data-friend-id="f-1" onclick="selectP2PFriend('f-1')" class="p2p-friend-chip px-3 py-2 rounded-2xl border-2 border-blue-600 bg-blue-50/80 text-xs font-bold flex items-center gap-2 cursor-pointer transition-all">
+                    <div class="w-6 h-6 rounded-full bg-blue-600 text-white text-[10px] flex items-center justify-center font-bold">SL</div>
+                    <div class="truncate">
+                      <span class="block truncate">Sarah Lim</span>
+                      <span class="text-[10px] text-slate-400 block">297118</span>
+                    </div>
+                  </div>
+                  <div data-friend-id="f-2" onclick="selectP2PFriend('f-2')" class="p2p-friend-chip px-3 py-2 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all">
+                    <div class="w-6 h-6 rounded-full bg-emerald-600 text-white text-[10px] flex items-center justify-center font-bold">MD</div>
+                    <div class="truncate">
+                      <span class="block truncate">Danish</span>
+                      <span class="text-[10px] text-slate-400 block">296540</span>
+                    </div>
+                  </div>
+                  <div data-friend-id="f-3" onclick="selectP2PFriend('f-3')" class="p2p-friend-chip px-3 py-2 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all">
+                    <div class="w-6 h-6 rounded-full bg-purple-600 text-white text-[10px] flex items-center justify-center font-bold">PR</div>
+                    <div class="truncate">
+                      <span class="block truncate">Priya</span>
+                      <span class="text-[10px] text-slate-400 block">298112</span>
+                    </div>
+                  </div>
+                  <div data-friend-id="f-4" onclick="selectP2PFriend('f-4')" class="p2p-friend-chip px-3 py-2 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all">
+                    <div class="w-6 h-6 rounded-full bg-amber-600 text-white text-[10px] flex items-center justify-center font-bold">WL</div>
+                    <div class="truncate">
+                      <span class="block truncate">Wei Lun</span>
+                      <span class="text-[10px] text-slate-400 block">295874</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mt-2 mb-1">Or Enter Other Student Matric ID</label>
+                  <input type="text" id="p2p-student-input" oninput="onP2PCustomStudentInput(this.value)" placeholder="e.g. 297118" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                </div>
+              </div>
+
+              <!-- Bank Account Method Box -->
+              <div id="p2p-method-bank-box" class="hidden space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Select Bank</label>
+                    <select id="p2p-bank-select" onchange="onP2PBankAccInput(document.getElementById('p2p-bank-acc-input').value)" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                      <option value="Maybank">Maybank (Malayan Banking)</option>
+                      <option value="CIMB Bank">CIMB Bank</option>
+                      <option value="Bank Islam">Bank Islam Malaysia</option>
+                      <option value="RHB Bank">RHB Bank</option>
+                      <option value="Public Bank">Public Bank</option>
+                      <option value="Hong Leong Bank">Hong Leong Bank</option>
+                      <option value="Bank Muamalat">Bank Muamalat</option>
+                      <option value="AmBank">AmBank</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Account Number</label>
+                    <input type="text" id="p2p-bank-acc-input" oninput="onP2PBankAccInput(this.value)" placeholder="e.g. 1142 8932 7701" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                  </div>
+                </div>
+              </div>
+
+              <!-- DuitNow Phone / IC Method Box -->
+              <div id="p2p-method-duitnow-box" class="hidden space-y-3">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Registered DuitNow Mobile / ID</label>
+                <input type="text" id="p2p-duitnow-input" oninput="onP2PDuitNowInput(this.value)" placeholder="e.g. 012-3456789 or 030512-02-1234" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+              </div>
+
+              <!-- Live Recipient Card -->
+              <div class="space-y-1">
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Verified Recipient</label>
+                <div id="p2p-resolved-card">
+                  <!-- Injected by renderP2PResolvedCard -->
+                </div>
+              </div>
+
+              <!-- Transfer Note -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Transfer Note / Reference</label>
+                <input type="text" id="p2p-note-input" oninput="onP2PNoteInputChanged(this.value)" value="Lunch reimbursement" placeholder="e.g. Lunch split, Project fee, Rent" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+              </div>
+
+            </div>
+
+            <!-- Right Column: Amount & Authorization Action -->
+            <div class="lg:col-span-5 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-5 flex flex-col justify-between">
+              
+              <div class="space-y-5">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Transfer Amount</label>
+                  <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-black text-slate-400">RM</span>
+                    <input type="number" id="p2p-amount-input" value="15.00" min="0.50" max="500.00" step="1.00" oninput="onP2PAmountInputChanged(this.value)" class="w-full pl-14 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-2xl font-black text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                  </div>
+                </div>
+
+                <!-- Quick Amount Chips -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 mb-1.5">Quick Amounts</label>
+                  <div class="grid grid-cols-4 gap-2">
+                    <button type="button" onclick="selectP2PQuickAmount(10)" class="py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">RM 10</button>
+                    <button type="button" onclick="selectP2PQuickAmount(15)" class="py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">RM 15</button>
+                    <button type="button" onclick="selectP2PQuickAmount(25)" class="py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">RM 25</button>
+                    <button type="button" onclick="selectP2PQuickAmount(50)" class="py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">RM 50</button>
+                  </div>
+                </div>
+
+                <!-- Wallet Deduction Preview -->
+                <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 space-y-1.5 text-xs">
+                  <div class="flex justify-between">
+                    <span class="text-slate-500">Available Wallet Balance:</span>
+                    <strong class="text-slate-900 wallet-balance-val">RM 186.40</strong>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-500">Security Clearance:</span>
+                    <span class="text-blue-600 font-bold">PIN / Biometric Required 🛡️</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <div>
+                <button type="button" onclick="requestP2PTransferAuth()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-sm shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                  <span>Authorize & Transfer via DuitNow</span>
+                  <span>➔</span>
+                </button>
+                <p class="text-[10px] text-slate-400 text-center mt-2">Protected by UUM PayNow Multi-Factor Biometric Trust</p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+</div>
 
     </section>
 
@@ -1393,9 +1580,10 @@
               <!-- Message injected on spin -->
             </div>
 
-            <button onclick="spinLuckyWheel()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
-              Spin Wheel 🎯
+            <button id="btn-spin-wheel" onclick="spinLuckyWheel()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer">
+              <span>Spin Wheel 🎯 (1 Free Daily Spin)</span>
             </button>
+            <div id="wheel-limit-notice" class="hidden mt-2"></div>
           </div>
 
         </div>
@@ -1570,8 +1758,8 @@
         <button onclick="closeSecurityModal()" class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors">
           Cancel
         </button>
-        <button onclick="confirmExecutePayment()" class="py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm shadow-blue-500/25">
-          Confirm & Pay
+        <button type="button" onclick="requestPaymentAuthFromSecurityModal()" class="py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm shadow-blue-500/25 cursor-pointer flex items-center justify-center gap-1.5">
+          <span>Confirm & Authorize 🔐</span>
         </button>
       </div>
 
@@ -1936,5 +2124,310 @@
 
     </div>
   </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: WALLET TOP-UP (Bank Transfer & TNG)  -->
+  <!-- Requirement 1                              -->
+  <!-- ========================================== -->
+  <div id="wallet-topup-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-5 animate-scale-up max-h-[90vh] overflow-y-auto">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-lg">
+            💳
+          </div>
+          <div>
+            <h4 class="font-extrabold text-slate-900 text-base">Reload Wallet Balance</h4>
+            <p class="text-[11px] text-slate-500">Fast & zero-fee transfer via Bank Transfer or Touch 'n Go</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeTopUpModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center font-bold transition-colors">✕</button>
+      </div>
+
+      <!-- Current Balance Info -->
+      <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+        <span class="text-xs font-semibold text-slate-600">Current Wallet Balance:</span>
+        <span id="topup-current-bal-display" class="text-sm font-black text-slate-900">RM 186.40</span>
+      </div>
+
+      <!-- Amount Presets -->
+      <div class="space-y-2">
+        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Select Top-Up Amount</label>
+        <div class="grid grid-cols-4 gap-2">
+          <button type="button" data-amt="10" onclick="selectTopUpAmount(10)" class="topup-amt-chip px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all cursor-pointer text-center">
+            RM 10
+          </button>
+          <button type="button" data-amt="20" onclick="selectTopUpAmount(20)" class="topup-amt-chip px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all cursor-pointer text-center">
+            RM 20
+          </button>
+          <button type="button" data-amt="50" onclick="selectTopUpAmount(50)" class="topup-amt-chip px-3.5 py-2.5 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs cursor-pointer text-center">
+            RM 50
+          </button>
+          <button type="button" data-amt="100" onclick="selectTopUpAmount(100)" class="topup-amt-chip px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all cursor-pointer text-center">
+            RM 100
+          </button>
+        </div>
+
+        <!-- Custom Amount Input -->
+        <div class="relative mt-2">
+          <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">RM</span>
+          <input type="number" id="topup-custom-amount" value="50" min="5" max="1000" step="5" oninput="onTopUpCustomAmountChanged(this.value)" placeholder="Custom amount (Min RM 5)" class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+        </div>
+      </div>
+
+      <!-- Payment Channels (FPX Banks + TNG eWallet) -->
+      <div class="space-y-2">
+        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Select Payment Method</label>
+        
+        <!-- FPX Bank Options -->
+        <div class="space-y-2">
+          <!-- Maybank -->
+          <div data-channel="maybank" onclick="selectTopUpChannel('maybank')" class="topup-channel-card p-3 rounded-2xl border-2 border-blue-600 bg-blue-50/70 shadow-2xs flex items-center justify-between cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-xl bg-amber-400 text-slate-900 font-black text-xs flex items-center justify-center">
+                M2U
+              </div>
+              <div>
+                <span class="text-xs font-bold text-slate-900 block">Maybank2u (Online Banking)</span>
+                <span class="text-[10px] text-slate-500">Direct FPX bank transfer</span>
+              </div>
+            </div>
+            <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">Instant</span>
+          </div>
+
+          <!-- CIMB Clicks -->
+          <div data-channel="cimb" onclick="selectTopUpChannel('cimb')" class="topup-channel-card p-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 shadow-2xs flex items-center justify-between cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-xl bg-red-600 text-white font-black text-[11px] flex items-center justify-center">
+                CIMB
+              </div>
+              <div>
+                <span class="text-xs font-bold text-slate-900 block">CIMB Clicks</span>
+                <span class="text-[10px] text-slate-500">Direct FPX bank transfer</span>
+              </div>
+            </div>
+            <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">Instant</span>
+          </div>
+
+          <!-- Bank Islam -->
+          <div data-channel="bankislam" onclick="selectTopUpChannel('bankislam')" class="topup-channel-card p-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 shadow-2xs flex items-center justify-between cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-xl bg-red-800 text-white font-black text-[10px] flex items-center justify-center">
+                B.ISLAM
+              </div>
+              <div>
+                <span class="text-xs font-bold text-slate-900 block">Bank Islam Internet Banking</span>
+                <span class="text-[10px] text-slate-500">Campus student preferred FPX</span>
+              </div>
+            </div>
+            <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">Instant</span>
+          </div>
+
+          <!-- Touch 'n Go eWallet -->
+          <div data-channel="tng" onclick="selectTopUpChannel('tng')" class="topup-channel-card p-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 shadow-2xs flex items-center justify-between cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-xl bg-blue-600 text-white font-black text-[11px] flex items-center justify-center">
+                TNG
+              </div>
+              <div>
+                <span class="text-xs font-bold text-slate-900 block">Touch 'n Go eWallet</span>
+                <span class="text-[10px] text-slate-500">Direct eWallet balance transfer</span>
+              </div>
+            </div>
+            <span class="text-[10px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">eWallet</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top-up Calculation Summary -->
+      <div class="p-3.5 bg-blue-50/60 rounded-2xl border border-blue-100 space-y-1.5 text-xs">
+        <div class="flex justify-between">
+          <span class="text-slate-600">Reload Amount:</span>
+          <strong id="topup-amount-display" class="text-blue-700 font-black">RM 50.00</strong>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-600">Reload Processing Fee:</span>
+          <span class="text-emerald-700 font-bold">RM 0.00 (Zero Fee)</span>
+        </div>
+        <div class="flex justify-between pt-1.5 border-t border-blue-200/60">
+          <span class="text-slate-900 font-bold">Projected New Balance:</span>
+          <strong id="topup-new-bal-display" class="text-slate-900 font-black">RM 236.40</strong>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="grid grid-cols-2 gap-3 pt-1">
+        <button type="button" onclick="closeTopUpModal()" class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors">
+          Cancel
+        </button>
+        <button type="button" id="btn-execute-topup" onclick="executeWalletTopUp()" class="py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/25">
+          Proceed to Reload
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: PAYMENT AUTHORIZATION (PIN & BIO)   -->
+  <!-- Requirement 3                              -->
+  <!-- ========================================== -->
+  <div id="payment-auth-modal" class="fixed inset-0 bg-slate-900/65 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-5 animate-scale-up">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm">
+            🔐
+          </div>
+          <div>
+            <h4 class="font-extrabold text-slate-900 text-sm">Payment Authorization</h4>
+            <span class="text-[10px] text-slate-500">2-Factor Security Authorization</span>
+          </div>
+        </div>
+        <button type="button" onclick="cancelPaymentAuth()" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">✕</button>
+      </div>
+
+      <!-- Transaction Preview -->
+      <div class="text-center py-1 bg-slate-50 rounded-2xl p-3 border border-slate-100">
+        <span class="text-[11px] text-slate-500 font-medium">Paying to:</span>
+        <h5 id="auth-modal-recipient-name" class="font-bold text-slate-900 text-sm">Kafe Inasis TNB</h5>
+        <p id="auth-modal-recipient-detail" class="text-[10px] text-slate-500">UUM-D-TNB01 • Verified Canteen</p>
+        <div id="auth-modal-amount" class="text-2xl font-black text-blue-700 mt-2">RM 6.50</div>
+      </div>
+
+      <!-- Auth Mode Selector (PIN vs Biometric) -->
+      <div class="bg-slate-100 p-1 rounded-2xl flex items-center gap-1">
+        <button type="button" id="btn-auth-tab-pin" onclick="switchAuthMode('pin')" class="flex-1 py-1.5 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-xs transition-all">
+          6-Digit PIN
+        </button>
+        <button type="button" id="btn-auth-tab-bio" onclick="switchAuthMode('biometric')" class="flex-1 py-1.5 text-xs font-bold rounded-xl text-slate-600 hover:text-slate-900 transition-all">
+          Fingerprint
+        </button>
+      </div>
+
+      <!-- PIN Input Mode -->
+      <div id="auth-pin-view" class="space-y-4">
+        <div class="text-center">
+          <p class="text-xs text-slate-600 font-semibold">Enter your 6-digit Wallet Security PIN</p>
+          <span id="auth-pin-hint" class="text-[10px] text-slate-400 block mt-0.5">(Demo PIN: <strong>123456</strong>)</span>
+        </div>
+
+        <!-- 6 PIN Dots Indicator -->
+        <div id="pin-dots-container" class="flex justify-center items-center gap-3 py-2">
+          <div id="pin-dot-1" class="pin-dot"></div>
+          <div id="pin-dot-2" class="pin-dot"></div>
+          <div id="pin-dot-3" class="pin-dot"></div>
+          <div id="pin-dot-4" class="pin-dot"></div>
+          <div id="pin-dot-5" class="pin-dot"></div>
+          <div id="pin-dot-6" class="pin-dot"></div>
+        </div>
+
+        <!-- Numeric Keypad Grid -->
+        <div class="grid grid-cols-3 gap-2 max-w-[240px] mx-auto pt-1">
+          <button type="button" onclick="enterPinDigit(1)" class="keypad-btn">1</button>
+          <button type="button" onclick="enterPinDigit(2)" class="keypad-btn">2</button>
+          <button type="button" onclick="enterPinDigit(3)" class="keypad-btn">3</button>
+          <button type="button" onclick="enterPinDigit(4)" class="keypad-btn">4</button>
+          <button type="button" onclick="enterPinDigit(5)" class="keypad-btn">5</button>
+          <button type="button" onclick="enterPinDigit(6)" class="keypad-btn">6</button>
+          <button type="button" onclick="enterPinDigit(7)" class="keypad-btn">7</button>
+          <button type="button" onclick="enterPinDigit(8)" class="keypad-btn">8</button>
+          <button type="button" onclick="enterPinDigit(9)" class="keypad-btn">9</button>
+          <button type="button" onclick="clearPin()" class="keypad-btn text-xs text-rose-600 font-extrabold">C</button>
+          <button type="button" onclick="enterPinDigit(0)" class="keypad-btn">0</button>
+          <button type="button" onclick="backspacePin()" class="keypad-btn text-xs text-slate-600 font-extrabold">⌫</button>
+        </div>
+      </div>
+
+      <!-- Biometric Fingerprint Mode -->
+      <div id="auth-biometric-view" class="hidden space-y-4 py-3 text-center">
+        <p class="text-xs text-slate-600 font-semibold">Touch the device fingerprint scanner below to authenticate</p>
+        
+        <div class="flex justify-center my-4">
+          <button type="button" onclick="authenticateBiometric()" class="w-24 h-24 rounded-full bg-emerald-50 border-2 border-emerald-500/40 hover:border-emerald-600 flex flex-col items-center justify-center gap-1 shadow-inner transition-all group cursor-pointer">
+            <svg id="biometric-sensor-icon" class="w-12 h-12 text-emerald-600 group-hover:scale-105 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 004 11m0 0a8.003 8.003 0 0115.357-2m1.519 4a10.97 10.97 0 01-.422 3.037m-2.678 6.456a10.96 10.96 0 01-3.277 2.507"/>
+            </svg>
+          </button>
+        </div>
+
+        <p id="biometric-status-text" class="text-xs font-bold text-slate-700">Tap scanner to verify fingerprint</p>
+        <span class="text-[10px] text-slate-400 block">FIDO2 / Hardware Biometric Enclave</span>
+      </div>
+
+      <!-- Footer Cancel -->
+      <div class="pt-1">
+        <button type="button" onclick="cancelPaymentAuth()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition-colors cursor-pointer">
+          Cancel Authorization
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: P2P TRANSFER RECEIPT (SUCCESS)      -->
+  <!-- Requirement 4                              -->
+  <!-- ========================================== -->
+  <div id="p2p-receipt-modal" class="fixed inset-0 bg-slate-900/65 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-scale-up text-center">
+      
+      <!-- Big Green Checkmark Icon with Soft Ring -->
+      <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mx-auto shadow-sm ring-8 ring-emerald-50">
+        ✓
+      </div>
+
+      <div>
+        <span class="text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full inline-block">
+          DuitNow Transfer Successful ✓
+        </span>
+        <h4 class="font-black text-slate-900 text-2xl mt-2 tracking-tight">Transfer Successful!</h4>
+        <div id="p2p-receipt-amount" class="text-3xl font-black text-emerald-600 mt-1">RM 15.00</div>
+        <p class="text-xs text-slate-500 mt-0.5">Funds transferred instantly via DuitNow P2P</p>
+      </div>
+
+      <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 text-xs space-y-2 text-left">
+        <div class="flex justify-between">
+          <span class="text-slate-500 font-medium">Recipient:</span>
+          <strong id="p2p-receipt-recipient" class="text-slate-900 font-bold">Sarah Lim</strong>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500 font-medium">Account / ID:</span>
+          <span id="p2p-receipt-account" class="font-mono text-slate-700 text-[11px]">297118 • Maybank</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500 font-medium">Reference:</span>
+          <span id="p2p-receipt-reference" class="text-slate-700 font-medium">Lunch reimbursement</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500 font-medium">Transaction ID:</span>
+          <span id="p2p-receipt-id" class="font-mono text-slate-600 text-[10px]">DUITNOW-P2P-2026-001</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500 font-medium">Date & Time:</span>
+          <span id="p2p-receipt-date" class="text-slate-600 text-[10px]">Just now</span>
+        </div>
+        <div class="flex justify-between pt-1 border-t border-slate-200">
+          <span class="text-slate-500 font-medium">Status:</span>
+          <span class="text-emerald-600 font-bold flex items-center gap-1">● Completed (Real-time)</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 pt-2">
+        <button type="button" onclick="shareP2PReceiptWhatsApp()" class="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 shadow-sm cursor-pointer">
+          <span>📲 Share Receipt</span>
+        </button>
+        <button type="button" onclick="closeP2PReceiptModal()" class="py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all cursor-pointer">
+          Done
+        </button>
+      </div>
+
+    </div>
+  </div>
+
 </body>
 </html>
