@@ -63,20 +63,8 @@ Complete database and photos for all 8 official UUM canteens:
 
 ## 🚀 How to Run the Website
 
-### Option 1: View via Current Live Server
-The server is currently running locally at:
-👉 **`http://localhost:3000`**
+Use https://uumpaynow.vercel.app/
 
-### Option 2: Open Directly in Browser
-You can open `index.html` directly in Google Chrome, Microsoft Edge, or Firefox:
-`file:///C:/Users/user/.gemini/antigravity/scratch/uum-paynow/index.html`
-
-### Option 3: Python HTTP Server
-```powershell
-cd "C:\Users\user\.gemini\antigravity\scratch\uum-paynow"
-python -m http.server 3000
-```
-Then navigate to `http://localhost:3000`.
 
 ---
 
